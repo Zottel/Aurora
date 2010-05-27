@@ -1,0 +1,21 @@
+                 Aurora
+
+I think this time I've found language and libraries that allow me to comfortably
+write an irc bot I can stick to for a couple of years.
+
+--------------------------------------------------------------------------------
+Prerequisites:
+ * lua 5.x with the following modules/libraries:
+ * luasockets
+ * copas
+ * lrexlib-pcre
+ * luajson is required by some modules
+
+Installation:
+  Huh? Create you config and run aurora.lua:
+  
+  # cp config.example.lua config.lua
+  # lua aurora.lua
+
+	When using luarocks you may want to call `lua --lluarocks.loader aurora.lua`
+	instead to be able to use the rocks.

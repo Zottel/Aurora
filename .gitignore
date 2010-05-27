@@ -1,0 +1,4 @@
+config.lua
+*.swp
+*.json
+!*.example.json
