@@ -2,14 +2,15 @@
 
 I think this time I've found language and libraries that allow me to comfortably
 write an irc bot I can stick to for a couple of years.
-
 --------------------------------------------------------------------------------
+
 Prerequisites:
  * lua 5.x with the following modules/libraries:
  * luasockets
  * copas
  * lrexlib-pcre
  * luajson (More or less optional, depending on what modules you want to use.)
+
 
 Installation:
   Huh? Create you config and run aurora.lua:
@@ -19,3 +20,24 @@ Installation:
 
 	When using luarocks you may want to call
 	`lua --lluarocks.loader aurora.lua` instead to be able to use those.
+
+
+Troubleshooting:
+  Problem:  "lua: attempt to yield across metamethod/C-call boundary" because
+            copas tries to yield in its send routine. Most entertaining since
+            restructuring the connection handling non-deterministically solved
+            the problem until I connected to yet another network.
+            
+  Solution: This behaviour seems to originate from some high-throughput
+            randomized (yay!) optimization in copas. I solved this by removing
+            the following lines from the send() function in copas.lua:
+
+            if (math.random(100) > 90) then
+                _writing_log[client] = os.time()
+                coroutine.yield(client, _writing)
+            end
+            
+            I this will most certainly not affect Aurora, since irc throughput
+            is limited on every irc server/network I know of, but I am not sure
+            why the error occurs in the first place and the copas developers
+            haven't responded to my bug report yet, so be careful.
