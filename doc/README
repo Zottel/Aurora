@@ -9,7 +9,7 @@ Prerequisites:
  * luasockets
  * copas
  * lrexlib-pcre
- * luajson is required by some modules
+ * luajson (More or less optional, depending on what modules you want to use.)
 
 Installation:
   Huh? Create you config and run aurora.lua:
@@ -17,5 +17,5 @@ Installation:
   # cp config.example.lua config.lua
   # lua aurora.lua
 
-	When using luarocks you may want to call `lua --lluarocks.loader aurora.lua`
-	instead to be able to use the rocks.
+	When using luarocks you may want to call
+	`lua --lluarocks.loader aurora.lua` instead to be able to use those.

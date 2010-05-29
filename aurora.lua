@@ -1,10 +1,11 @@
 -- -------------------------------------------------------------------------- --
--- Aurora - …                                                                 --
+-- Aurora - aurora.lua - glues together all bot components.                   --
 -- -------------------------------------------------------------------------- --
 -- Copyright (C) 2010 Julius Roob                                             --
 -- This program is free software; you can redistribute it and/or modify it    --
 -- under the terms of the GNU General Public License as published by the      --
--- Free Software Foundation; either version 3 of the License                  --
+-- Free Software Foundation; either version 3 of the License,                 --
+-- or (at your option) any later version.                                     --
 --                                                                            --
 -- This program is distributed in the hope that it will be useful, but        --
 -- WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY --
@@ -15,8 +16,8 @@
 -- with this program; if not, see <http://www.gnu.org/licenses/>.             --
 -- -------------------------------------------------------------------------- --
 
--- We need to require copas here because we want our networks to share one
--- event handling system.
+-- We have to require copas in our main file because the network connections
+-- have to share one event handling system to work properly.
 local copas = require("copas")
 
 
