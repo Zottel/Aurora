@@ -38,10 +38,10 @@ end
 function interface.handlers.privmsg(network, sender, channel, message)
 	--print("++", pcre.match (message, "^([^ \\+]+)\\+\\+$"))
 	local drink_orig = pcre.match (message, "([^ \\+]+)\\+\\+") 
-	local new_drink = pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)")
+	local new_drink = pcre.match(message, "!drinks\.new\\(([^\\)\\+ ]+)\\)")
 	local incr_drink = pcre.match(message, "([^ \\+]+\\+=\\d*)")
-	local drink_list = pcre.match(message, "(drinks\.list\\(\\))")
-	local drink_stat = pcre.match(message, "(drinks\.stat\\(.*\\))")
+	local drink_list = pcre.match(message, "!(drinks\.list\\(\\))")
+	local drink_stat = pcre.match(message, "!(drinks\.stat\\(.*\\))")
 	if drink_list then
 		network.send("PRIVMSG", channel, "Ich kenne folgende Getränke:")
 		for name, inhalt in pairs(coffee.db) do
