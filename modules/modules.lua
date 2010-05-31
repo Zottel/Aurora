@@ -33,6 +33,14 @@ local function load(name, file, param)
 	if not succ then
 		return nil, "Could not load module: " .. module
 	end
+	
+	if not type(parameters) == "table" then
+		if type(parameters) == "string" or type(parameters) = "number" then
+			parameters = {parameters}
+		else
+			return nil, "Could not initialize module: Wrong parameter type!"
+		end
+	end
 
 	local succ, err = pcall(module.init, unpack(parameters))
 	if not succ then
