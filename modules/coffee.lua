@@ -53,12 +53,12 @@ function interface.handlers.privmsg(network, sender, channel, message)
 		if stat_user == "" then
 			user = sender.nick
 		else
-			user = string.lower(stat_user)
+			user = stat_user
 		end
 		network.send("PRIVMSG", channel, user .. " hat folgende Getränke konsumiert:")
 		for name, inhalt in pairs(coffee.db) do
-			if coffee.db[name][user] then
-				network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][user])
+			if coffee.db[name][string.lower(user)] then
+				network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][lower(user)])
 			end
 		end
 	end
