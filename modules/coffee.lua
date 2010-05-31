@@ -47,6 +47,15 @@ function interface.handlers.privmsg(network, sender, channel, message)
 		if help == "" then
 			network.send("PRIVMSG", channel, "Bekannte Befehle: !drinks.list, !drinks.stat, !drinks.new, {drink}++, {drink}+=n")
 			network.send("PRIVMSG", channel, "Informationen zu den einzelnen Befehlen: !help coffee <command>")
+		elseif pcre.match(help, "drinks\.list") then
+			network.send("PRIVMSG", channel, "Usage: !drinks.list()")
+			network.send("PRIVMSG", channel, "Gibt eine Liste aller bekannten Getränke aus.")
+		elseif pcre.match(help, "drinks\.stat") then
+			network.send("PRIVMSG", channel, "Usage: !drinks.stat([<nick>])")
+			network.send("PRIVMSG", channel, "Gibt die Statistik für <nick> aus.")
+		elseif pcre.match(help, "drinks\.new") then
+			network.send("PRIVMSG", channel, "Usage: !drinks.new(<name>)")
+			network.send("PRIVMSG", channel, "Fügt <name> zur List der gekannten Getränke hinzu.")
 		end
 	end
 	if drink_list then
