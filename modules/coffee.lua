@@ -41,7 +41,7 @@ function interface.handlers.privmsg(network, sender, channel, message)
 	local new_drink = pcre.match(message, "!drinks\.new\\(([^\\)\\+ ]+)\\)")
 	local incr_drink = pcre.match(message, "([^ \\+]+\\+=\\d*)")
 	local drink_list = pcre.match(message, "!(drinks\.list\\(\\))")
-	local drink_stat = pcre.match(message, "!(drinks\.stat\\(.*\\))")
+	local drink_stat = pcre.match(message, "!drinks\.stat\\((.*)\\)")
 	if drink_list then
 		network.send("PRIVMSG", channel, "Ich kenne folgende Getränke:")
 		for name, inhalt in pairs(coffee.db) do
@@ -49,17 +49,21 @@ function interface.handlers.privmsg(network, sender, channel, message)
 		end
 	end
 	if drink_stat then
-		local stat_user = pcre.match(drink_stat, "\\((.*)\\)")
-		if stat_user == "" then
+		if drink_stat == "" then
 			user = sender.nick
 		else
-			user = stat_user
+			user = drink_stat
 		end
 		network.send("PRIVMSG", channel, user .. " hat folgende Getränke konsumiert:")
+		local anydrink = false
 		for name, inhalt in pairs(coffee.db) do
 			if coffee.db[name][string.lower(user)] then
-				network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][lower(user)])
+				network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][string.lower(user)])
+				anydrink = true
 			end
+		end
+		if not anydrink then
+			network.send("PRIVMSG", channel, "Luft und Liebe")
 		end
 	end
 	if new_drink then
