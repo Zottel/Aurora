@@ -37,9 +37,9 @@ end
 
 function interface.handlers.privmsg(network, sender, channel, message)
 	--print("++", pcre.match (message, "^([^ \\+]+)\\+\\+$"))
-	local drink_orig = pcre.match (message, "^([^ \\+]+)\\+\\+$") 
+	local drink_orig = pcre.match (message, "([^ \\+]+)\\+\\+") 
 	local new_drink = pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)")
-	local incr_drink = pcre.match(message, "^([^ \\+]+\\+=\\d*)")
+	local incr_drink = pcre.match(message, "([^ \\+]+\\+=\\d*)")
 	if drink_orig then
 		drink = string.lower(drink_orig)
 		if coffee.db[drink] then
