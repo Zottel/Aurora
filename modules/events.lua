@@ -38,7 +38,7 @@ end
 local function read_events_db()
 	local file = assert(io.open(events.filename))
 	events.db = json.decode(assert(file:read("*a")))
-	file:close(in)
+	file:close()
 	return db
 end
 
