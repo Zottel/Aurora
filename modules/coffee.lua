@@ -26,6 +26,9 @@ end
 
 
 function interface.init(filename)
+    if not type(filename) == "string" then
+        return nil, "Error in coffee.lua: Please call with db filename."
+    end
 	coffee.filename = filename
 	read_coffee_db()
 	return true
