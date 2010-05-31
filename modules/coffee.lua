@@ -40,6 +40,13 @@ function interface.handlers.privmsg(network, sender, channel, message)
 	local drink_orig = pcre.match (message, "([^ \\+]+)\\+\\+") 
 	local new_drink = pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)")
 	local incr_drink = pcre.match(message, "([^ \\+]+\\+=\\d*)")
+	local drink_list = pcre.match(message, "(drinks\.list)")
+	if drink_list then
+		network.send("PRIVMSG", channel, "I know the following drinks:")
+		for name, inhalt in pairs(coffee.db) do
+			network.send("PRIVMSG", channel, name)
+		end
+	end
 	if new_drink then
 		--print("new:", pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)"))
 		if coffee.db[new_drink] == nil then
