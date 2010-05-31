@@ -34,7 +34,7 @@ local function load(name, file, param)
 		return nil, "Could not load module: " .. module
 	end
 	
-	if not type(parameters) == "table" then
+	if type(parameters) ~= "table" then
 		if type(parameters) == "string" or type(parameters) == "number" or type(parameters) == "boolean" then
 			parameters = {parameters}
 		else
