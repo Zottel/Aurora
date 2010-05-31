@@ -35,6 +35,7 @@ end
 function interface.handlers.privmsg(network, sender, channel, message)
 	--print("++", pcre.match (message, "^([^ \\+]+)\\+\\+$"))
 	local drink_orig = pcre.match (message, "^([^ \\+]+)\\+\\+$") 
+	local new_drink = pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)")
 	if drink_orig then
 		drink = string.lower(drink_orig)
 		if coffee.db[drink] then
@@ -49,13 +50,12 @@ function interface.handlers.privmsg(network, sender, channel, message)
 		else
 			network.send("privmsg", channel, "Error in coffee.lua: Drink does not exist!!  Stack traceback: coffee, beer, mate, baileys…")
 		end
-	else
+	elseif new_drink then
 		--print("new:", pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)"))
-		local new_drink = pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)")
-		if new_drink and coffee.db[new_drink] == nil then
+		if coffee.db[new_drink] == nil then
 			coffee.db[string.lower(new_drink)] = {[string.lower(sender.nick)] = 0}
 			write_coffee_db()
-		elseif new_drink then
+		else
 			network.send("privmsg", channel, "Error in coffee.lua: Drink exists!           Stack traceback: coffee, beer, mate, baileys…")
 		end
 	end
