@@ -35,7 +35,7 @@ local function load(name, file, param)
 	end
 	
 	if not type(parameters) == "table" then
-		if type(parameters) == "string" or type(parameters) = "number" then
+		if type(parameters) == "string" or type(parameters) == "number" or type(parameters) == "boolean" then
 			parameters = {parameters}
 		else
 			return nil, "Could not initialize module: Wrong parameter type!"
