@@ -54,7 +54,7 @@ end
 
 function interface.handlers.privmsg(network, sender, channel, message)
     local help, command = pcre.match (message, "(^!help events(?: ([^ ]+)|))")
-	local new_event = pcre.match (message, "^!new_event ") 
+		local new_event = pcre.match (message, "^!new_event ") 
     local event_in = pcre.match (message, "^!in ")
     local event_out = pcre.match (message, "^!out ")
 
