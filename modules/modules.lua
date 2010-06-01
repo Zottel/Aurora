@@ -24,9 +24,9 @@ local function load(name, file, param)
 		return nil, "'" .. param .. "' is no valid JSON!"
 	end
 	
-	local succ, res = pcall(loadfile, file)
-	if not succ then
-		return nil, "Could not load file: " .. res
+	local res, err = loadfile(file)
+	if not res then
+		return nil, "Could not load file: " .. err
 	end
 
 	local succ, module = pcall(res)

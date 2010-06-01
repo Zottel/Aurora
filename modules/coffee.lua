@@ -37,11 +37,27 @@ end
 
 function interface.handlers.privmsg(network, sender, channel, message)
 	--print("++", pcre.match (message, "^([^ \\+]+)\\+\\+$"))
+	local help = pcre.match (message, "^!help coffee ?(.*)")
 	local drink_orig = pcre.match (message, "([^ \\+]+)\\+\\+") 
-	local new_drink = pcre.match(message, "!drinks\.new\\(([^\\)\\+ ]+)\\)")
-	local incr_drink = pcre.match(message, "([^ \\+]+\\+=\\d*)")
-	local drink_list = pcre.match(message, "!(drinks\.list\\(\\))")
-	local drink_stat = pcre.match(message, "!(drinks\.stat\\(.*\\))")
+	local new_drink = pcre.match(message, "^!drinks\.new\\(([^\\)\\+ ]+)\\)")
+	local incr_drink_name,incr_drink_number = pcre.match(message, "([^ \\+]+)\\+=(\\d+)")
+	local drink_list = pcre.match(message, "^!(drinks\.list\\(\\))")
+	local drink_stat = pcre.match(message, "^!drinks\.stat\\((.*)\\)")
+	if help then
+		if help == "" then
+			network.send("PRIVMSG", channel, "Bekannte Befehle: !drinks.list, !drinks.stat, !drinks.new, {drink}++, {drink}+=n")
+			network.send("PRIVMSG", channel, "Informationen zu den einzelnen Befehlen: !help coffee <command>")
+		elseif pcre.match(help, "drinks\.list") then
+			network.send("PRIVMSG", channel, "Usage: !drinks.list()")
+			network.send("PRIVMSG", channel, "Gibt eine Liste aller bekannten Getränke aus.")
+		elseif pcre.match(help, "drinks\.stat") then
+			network.send("PRIVMSG", channel, "Usage: !drinks.stat([<nick>])")
+			network.send("PRIVMSG", channel, "Gibt die Statistik für <nick> aus.")
+		elseif pcre.match(help, "drinks\.new") then
+			network.send("PRIVMSG", channel, "Usage: !drinks.new(<name>)")
+			network.send("PRIVMSG", channel, "Fügt <name> zur List der gekannten Getränke hinzu.")
+		end
+	end
 	if drink_list then
 		network.send("PRIVMSG", channel, "Ich kenne folgende Getränke:")
 		for name, inhalt in pairs(coffee.db) do
@@ -49,17 +65,21 @@ function interface.handlers.privmsg(network, sender, channel, message)
 		end
 	end
 	if drink_stat then
-		local stat_user = pcre.match(drink_stat, "\\((.*)\\)")
-		if stat_user == "" then
+		if drink_stat == "" then
 			user = sender.nick
 		else
-			user = stat_user
+			user = drink_stat
 		end
 		network.send("PRIVMSG", channel, user .. " hat folgende Getränke konsumiert:")
+		local anydrink = false
 		for name, inhalt in pairs(coffee.db) do
 			if coffee.db[name][string.lower(user)] then
-				network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][lower(user)])
+				network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][string.lower(user)])
+				anydrink = true
 			end
+		end
+		if not anydrink then
+			network.send("PRIVMSG", channel, "Luft und Liebe")
 		end
 	end
 	if new_drink then
@@ -86,9 +106,8 @@ function interface.handlers.privmsg(network, sender, channel, message)
 			network.send("privmsg", channel, "Error in coffee.lua: Drink does not exist!!  Stack traceback: coffee, beer, mate, baileys…")
 		end
 	end
-	if incr_drink then
-		local incr_drink_name = pcre.match(incr_drink, "^([^ \\+]+)\\+=.*")
-		local incr_drink_number = tonumber(pcre.match(incr_drink, "^[^\\d]*([\\d]*)$"))
+	if incr_drink_name then
+		incr_drink_number = tonumber(incr_drink_number)
 		if coffee.db[incr_drink_name] then
 			if coffee.db[incr_drink_name][string.lower(sender.nick)] then
 				coffee.db[incr_drink_name][string.lower(sender.nick)] = incr_drink_number + coffee.db[incr_drink_name][string.lower(sender.nick)]
