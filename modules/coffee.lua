@@ -42,7 +42,7 @@ function interface.handlers.privmsg(network, sender, channel, message)
 	local help = pcre.match (message, "^!help coffee ?(.*)")
 	local drink_orig = pcre.match (message, "([^ \\+]+)\\+\\+") 
 	local new_drink = pcre.match(message, "^!drinks\.new\\(([^\\)\\+ ]+)\\)")
-	local incr_drink_name,incr_drink_number = pcre.match(message, "([^ \\+]+)\\+=(\\d+)")
+	local incr_drink_name,incr_drink_number = pcre.match(message, "([^ \\+]+) ?\\+= ?(\\d+)")
 	local drink_list = pcre.match(message, "^!(drinks\.list\\(\\))")
 	local drink_stat = pcre.match(message, "^!drinks\.stat\\((.*)\\)")
 
