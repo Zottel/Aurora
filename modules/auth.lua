@@ -45,7 +45,7 @@ local function is_authenticated(net, sender)
 end
 
 
-function interface.init(modules, users)
+function interface.construct(modules, users)
 	-- Save the username/password db for later use
 	for name, password in pairs(users) do
 		user[name] = {["password"] = password}
@@ -55,7 +55,7 @@ function interface.init(modules, users)
 	for name, options in pairs(modules) do
 		local mod = assert(loadfile(options.file))()
 
-		assert(mod.init(unpack(options.parameters)))
+		assert(mod.construct(unpack(options.parameters)))
 
 		for op, callback in pairs(mod.handlers) do
 			op = string.upper(op)
@@ -94,6 +94,12 @@ function interface.init(modules, users)
 	end
 
 	return true
+end
+
+function interface.destruct()
+	for name, interface in pairs(modules) do
+		interface.destruct()
+	end
 end
 
 

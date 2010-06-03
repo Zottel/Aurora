@@ -43,7 +43,7 @@ local function read_events_db()
 end
 
 
-function interface.init(filename)
+function interface.construct(filename)
 	if not type(filename) == "string" then
 		return nil, "Error in events.lua: Please call with db filename."
 	end

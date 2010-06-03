@@ -8,12 +8,12 @@ local debug = false
 local past_reconnects = {}
 local to_reconnect = {}
 
-function interface.init(to_debug)
+function interface.construct(to_debug)
 	debug = to_debug
 	return true
 end
 
-function interface.handlers.step()
+function interface.step()
 	for net, time in pairs(to_reconnect) do
 		if net and time <= os.time() then
 			if debug then print("Trying to reconnect to " .. net.name() .. "…") end

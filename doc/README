@@ -22,6 +22,11 @@ Installation:
 	`lua --lluarocks.loader aurora.lua` instead to be able to use those.
 
 
+Developer notes:
+	When writing your own module, please have a look at modules/dummy.lua
+	for the interface specification.
+
+
 Troubleshooting:
   Problem:  "lua: attempt to yield across metamethod/C-call boundary" because
             copas tries to yield in its send routine. Most entertaining since

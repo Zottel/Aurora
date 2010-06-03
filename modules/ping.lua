@@ -3,7 +3,7 @@ local interface = {}
 local timeout = 10
 local last_ping = {}
 
-interface.init = function(new_timeout)
+interface.construct = function(new_timeout)
 	if new_timeout then
 		timeout = new_timeout
 	end
