@@ -24,7 +24,7 @@ local interface = {handlers = {}}
 local events =
 {
 	filename = nil,
-	db = nil
+	db = {}
 }
 
 
@@ -43,35 +43,49 @@ local function read_events_db()
 end
 
 
-function interface.init(filename)
-    if not type(filename) == "string" then
-        return nil, "Error in events.lua: Please call with db filename."
-    end
+function interface.construct(filename)
+	if not type(filename) == "string" then
+		return nil, "Error in events.lua: Please call with db filename."
+	end
 	events.filename = filename
 	read_events_db()
 	return true
 end
 
 function interface.handlers.privmsg(network, sender, channel, message)
-    local help, command = pcre.match (message, "(^!help events(?: ([^ ]+)|))")
-		local new_event = pcre.match (message, "^!new_event ") 
-    local event_in = pcre.match (message, "^!in ")
-    local event_out = pcre.match (message, "^!out ")
+	local help, command = pcre.match (message, "(^!help events(?: ([^ ]+)|))")
+	local list_events = pcre.match (message, "^!list_events")
+	local new_event, name, day, month, year, hour, min, location, desc = pcre.match (message, "(^!new_event (\\W|\"[^\"]+\") (\\d{2})\\.(\\d{2})\\.(\\d{4})(?: (\\d{2}):(\\d{2})|)(?: \"([^\"]+)\"|)(?: \"([^\"]+)\"|))")
+	local event_in = pcre.match (message, "^!in ")
+	local event_out = pcre.match (message, "^!out ")
 
-    if help then
-        if command == "new_event" then
-            network.send("privmsg", channel, "To add a new event use: !new_event <date> <time> <name> <location> <description>")
-            network.send("privmsg", channel, "Example: !new_event 11.06.2010 19:00 \"Chaostreff\" \"TU 48-462\" \"Nächster Chaostreff\" ")
-        elseif command == "in" then
-            network.send("privmsg", channel, "To confirm that you are attending an event use: !in <name> [<date> [<time>]] [location]")
-            network.send("privmsg", channel, "Example: !in \"Chaostreff\" 11.06.2010 19:00 \"TU 48-462\" ")
-        elseif command == "out" then
-            network.send("privmsg", channel, "To deny that you are attending an event use: !out <name> [<date> [<time>]] [location]")
-            network.send("privmsg", channel, "Example: !out \"Chaostreff\" 11.06.2010 19:00 \"TU 48-462\" ")
-        else
-            network.send("privmsg", channel, "Supported commands: new_event, in, out. See !help events <command> for further details.")
-        end
-    end
+	if help then
+		if command == "list_events" then
+			network.send("privmsg", channel, "To list the existing events use: !list_events")
+		elseif command == "new_event" then
+			network.send("privmsg", channel, "To add a new event use: !new_event <name> <date> <time> <location> <description>")
+			network.send("privmsg", channel, "Example: !new_event \"Chaostreff\" 11.06.2010 19:00 \"TU 48-462\" \"Nächster Chaostreff\" ")
+		elseif command == "in" then
+			network.send("privmsg", channel, "To confirm that you are attending an event use: !in <name> [<date> [<time>]] [location]")
+			network.send("privmsg", channel, "Example: !in \"Chaostreff\" 11.06.2010 19:00 \"TU 48-462\" ")
+		elseif command == "out" then
+			network.send("privmsg", channel, "To deny that you are attending an event use: !out <name> [<date> [<time>]] [location]")
+			network.send("privmsg", channel, "Example: !out \"Chaostreff\" 11.06.2010 19:00 \"TU 48-462\" ")
+		else
+			network.send("privmsg", channel, "Supported commands: new_event, in, out. See !help events <command> for further details.")
+		end
+	elseif list_events then
+		network.send("privmsg", channel, "Events:")
+		for _, event in pairs(events.db) do
+			local date = event.date.day .. "." .. event.date.month .. "." .. event.date.year
+			local time = event.time.hour .. ":" .. event.time.min
+			network.send("privmsg", channel, event.name .. " " .. date .. " " .. time .. " " .. event.location .. " " .. event.desc)
+		end
+	elseif new_event then
+		local event = {name=name, date={day=day, month=month, year=year}, time={hour=hour, min=min}, location=location, desc=desc}
+		table.insert(events.db, event)
+		write_events_db()
+	end
 end
 
 return interface

@@ -37,11 +37,13 @@ networks = {}
 modules = {}
 
 
--- Load all modules and call their init() functions with
+-- Load all modules and call their construct() functions with
 -- the configured parameters.
 for name, mod_conf in pairs(config.modules) do
 	modules[name] = assert(loadfile(mod_conf.file))()
-	assert(modules[name].init(unpack(mod_conf.parameters)))
+	if modules[name] ~= nil then
+		assert(modules[name].construct(unpack(mod_conf.parameters)))
+	end
 end
 
 
@@ -68,8 +70,8 @@ end
 while not exit do
 	copas.step(2)
 	for _, interface in pairs(modules) do
-		if interface.handlers.step ~= nil then
-			interface.handlers.step()
+		if interface.step ~= nil then
+			interface.step()
 		end
 	end
 end

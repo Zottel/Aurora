@@ -2,7 +2,7 @@ local pcre = require("rex_pcre")
 
 local interface = {}
 
-interface.init = function(msg)
+interface.construct = function(msg)
 	return true
 end
 

@@ -58,7 +58,7 @@ local function load(name, file, param)
 	return true
 end
 
-interface.init = function()
+interface.construct = function()
 	return true
 end
 

@@ -3,7 +3,7 @@ local interface = {}
 local question = "ping?"
 local answer = "pong!"
 
-interface.init = function(receive, send)
+interface.construct = function(receive, send)
 	if receive then
 		question = receive
 	end
