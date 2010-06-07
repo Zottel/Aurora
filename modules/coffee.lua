@@ -24,6 +24,69 @@ local function read_coffee_db()
 	return db
 end
 
+local function coffee_help(network, sender, channel, cmd)
+		if cmd == "list" then --help message for drinks.list
+			network.send("PRIVMSG", channel, "Usage: !drinks.list()")
+			network.send("PRIVMSG", channel, "Gibt eine Liste aller bekannten Getränke aus.")
+		elseif cmd == "stat" then --help message for drinks.stat
+			network.send("PRIVMSG", channel, "Usage: !drinks.stat([<nick>])")
+			network.send("PRIVMSG", channel, "Gibt die Statistik für <nick> aus.")
+		elseif cmd == "new" then --help message for drinks.new
+			network.send("PRIVMSG", channel, "Usage: !drinks.new(<name>)")
+			network.send("PRIVMSG", channel, "Fügt <name> zur List der gekannten Getränke hinzu.")
+		else
+			network.send("PRIVMSG", channel, "Bekannte Befehle: !drinks.list, !drinks.stat, !drinks.new, {drink}++, {drink}+=n")
+			network.send("PRIVMSG", channel, "Informationen zu den einzelnen Befehlen: !help coffee <command>")
+		end
+end
+
+local coffee_functions = {}
+
+function coffee_functions.stat(network, sender, channel, user)
+	if user == "" then --check if nick was given otherwise take sender
+		user = sender.nick
+	end
+
+	network.send("PRIVMSG", channel, user .. " hat folgende Getränke konsumiert:")
+
+	local anydrink = false --initialize variable to check if any drink was found
+
+	for name, inhalt in pairs(coffee.db) do
+		if coffee.db[name][string.lower(user)] then
+			network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][string.lower(user)])
+
+			anydrink = true
+		end
+	end
+
+	if not anydrink then --if no drink was found add "Luft und Liebe"
+		network.send("PRIVMSG", channel, "Luft und Liebe")
+	end
+end
+
+function coffee_functions.list(network, sender, channel)
+	network.send("PRIVMSG", channel, "Ich kenne folgende Getränke:")
+	list = ""
+	for name, inhalt in pairs(coffee.db) do --print name for each drink in coffee.db
+		if list ~= "" then
+			list = list .. ", "
+		end
+			list = list .. name
+	end
+	network.send("PRIVMSG", channel, list)
+end
+
+function coffee_functions.new(network, sender, channel, new_drink)
+	if new_drink and new_drink ~= "" then
+		if coffee.db[new_drink] == nil then
+			coffee.db[string.lower(new_drink)] = {[string.lower(sender.nick)] = 0}
+			write_coffee_db()
+		else
+			network.send("privmsg", channel, "Error in coffee.lua: Drink exists!           Stack traceback: coffee, beer, mate, baileys…")
+		end
+	end
+end
+
 
 function interface.construct(filename)
     if not type(filename) == "string" then
@@ -39,68 +102,28 @@ function interface.handlers.privmsg(network, sender, channel, message)
 	--print("++", pcre.match (message, "^([^ \\+]+)\\+\\+$"))
 
 	--match incoming strings
-	local help = pcre.match (message, "^!help coffee ?(.*)")
-	local drink_orig = pcre.match (message, "([^ \\+]+)\\+\\+") 
-	local new_drink = pcre.match(message, "^!drinks\.new\\(([^\\)\\+ ]+)\\)")
-	local incr_drink_name,incr_drink_number = pcre.match(message, "([^ \\+]+) ?\\+= ?(\\d+)")
-	local drink_list = pcre.match(message, "^!(drinks\.list\\(\\))")
-	local drink_stat = pcre.match(message, "^!drinks\.stat\\((.*)\\)")
+	local help, help_cmd = pcre.match (message, "^!help (coffee)( .*|)")
 
+	local drink_cmd, drink_param = pcre.match(message, "^!drinks\.(\\w+)\\((.*)\\)")
+
+	local drink_orig = pcre.match (message, "([^ \\+]+)\\+\\+") 
+	local incr_drink_name,incr_drink_number = pcre.match(message, "([^ \\+]+) ?\\+= ?(\\d+)")
+
+	
 	--print help
 	if help then
-		if help == "" then --general help
-			network.send("PRIVMSG", channel, "Bekannte Befehle: !drinks.list, !drinks.stat, !drinks.new, {drink}++, {drink}+=n")
-			network.send("PRIVMSG", channel, "Informationen zu den einzelnen Befehlen: !help coffee <command>")
-		elseif pcre.match(help, "drinks\.list") then --help message for drinks.list
-			network.send("PRIVMSG", channel, "Usage: !drinks.list()")
-			network.send("PRIVMSG", channel, "Gibt eine Liste aller bekannten Getränke aus.")
-		elseif pcre.match(help, "drinks\.stat") then --help message for drinks.stat
-			network.send("PRIVMSG", channel, "Usage: !drinks.stat([<nick>])")
-			network.send("PRIVMSG", channel, "Gibt die Statistik für <nick> aus.")
-		elseif pcre.match(help, "drinks\.new") then --help message for drinks.new
-			network.send("PRIVMSG", channel, "Usage: !drinks.new(<name>)")
-			network.send("PRIVMSG", channel, "Fügt <name> zur List der gekannten Getränke hinzu.")
-		end
+		coffee_help(network, sender, channel, help_cmd)
 	end
 
-	--list known drinks
-	if drink_list then
-		network.send("PRIVMSG", channel, "Ich kenne folgende Getränke:")
-		for name, inhalt in pairs(coffee.db) do --print name for each drink in coffee.db
-			network.send("PRIVMSG", channel, name)
-		end
-	end
-
-	--print stats for user
-	if drink_stat then
-		if drink_stat == "" then --check if nick was given otherwise take sender
-			user = sender.nick
+	--print misc coffee functions...
+	if drink_cmd then
+		if coffee_functions[drink_cmd] then
+			coffee_functions[drink_cmd](network, sender, channel, drink_param)
 		else
-			user = drink_stat
-		end
-		network.send("PRIVMSG", channel, user .. " hat folgende Getränke konsumiert:")
-		local anydrink = false --initialize variable to check if any drink was found
-		for name, inhalt in pairs(coffee.db) do
-			if coffee.db[name][string.lower(user)] then
-				network.send("PRIVMSG", channel, name .. ": " .. coffee.db[name][string.lower(user)])
-				anydrink = true
-			end
-		end
-		if not anydrink then --if no drink was found add "Luft und Liebe"
-			network.send("PRIVMSG", channel, "Luft und Liebe")
+			network.send("privmsg", channel, "Error in coffee.lua: Unknown cmd '" .. drink_cmd .. "'!           Stack traceback: coffee, beer, mate, baileys…")
 		end
 	end
 
-	--add new drink to database
-	if new_drink then
-		--print("new:", pcre.match(message, "drinks\.new\\(([^\\)\\+ ]+)\\)"))
-		if coffee.db[new_drink] == nil then
-			coffee.db[string.lower(new_drink)] = {[string.lower(sender.nick)] = 0}
-			write_coffee_db()
-		else
-			network.send("privmsg", channel, "Error in coffee.lua: Drink exists!           Stack traceback: coffee, beer, mate, baileys…")
-		end
-	end
 
 	--react on {drink}++
 	if drink_orig then
