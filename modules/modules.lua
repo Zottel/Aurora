@@ -5,11 +5,17 @@ local function unload(name)
 	if modules[name] == nil then
 		return nil, "module '" .. name .. "' not loaded!"
 	end
+
 	for _, handler in pairs(modules[name].handlers) do
 		for _, net in pairs(networks) do
 			net.unregister_handler(handler)
 		end
 	end
+
+	if modules[name].destruct ~= nil and type(modules[name].destruct) ~= "function" then
+		return nil, "module '" .. name .. "' has a broken destructor - so I unloaded it without calling that!"
+	end
+
 	modules[name] = nil
 	return true
 end
@@ -42,7 +48,7 @@ local function load(name, file, param)
 		end
 	end
 
-	local succ, err = pcall(module.init, unpack(parameters))
+	local succ, err = pcall(module.construct, unpack(parameters))
 	if not succ then
 		return nil, "Could not initialize module: " .. err
 	end
