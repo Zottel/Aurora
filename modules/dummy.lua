@@ -51,14 +51,13 @@ local interface = {
 
 		
 		-- There are two special non-standard handlers:
-		
 		disconnect = function(net, wanted, err)
 			-- Is called when the network connection is closed.
 			-- The parameter "wanted" indicates - if set to true that the network
 			-- connection was closed by a module or the user and - probably - won't
 			-- come back on-line.
 		end
-
+		-- and
 		connect = function(net)
 			-- Fairly self-explanatory.
 			-- Is - currently - called once the irc network sends an
