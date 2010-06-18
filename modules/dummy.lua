@@ -43,6 +43,11 @@ local interface = {
 	handlers = {
 		-- Functions to handle irc messages - since the underlying network library
 		-- is fairly minimal these can be taken directly from the IRC RFC.
+		
+		-- One typical IRC message handler:
+		privmsg = function(network, sender, channel, message)
+			-- Do something with message…
+		end
 
 		
 		-- There are two special non-standard handlers:
