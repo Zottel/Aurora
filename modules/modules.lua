@@ -48,9 +48,11 @@ local function load(name, file, param)
 		end
 	end
 
-	local succ, err = pcall(module.construct, unpack(parameters))
-	if not succ then
-		return nil, "Could not initialize module: " .. err
+	if module.construct then
+		local succ, err = pcall(module.construct, unpack(parameters))
+		if not succ then
+			return nil, "Could not initialize module: " .. err
+		end
 	end
 	
 	for _, net in pairs(networks) do
