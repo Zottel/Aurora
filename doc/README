@@ -6,7 +6,7 @@ write an irc bot I can stick to for a couple of years.
 
 Prerequisites:
  * lua 5.x with the following modules/libraries:
- * luasockets
+ * luasocket
  * copas
  * lrexlib-pcre
  * luajson (More or less optional, depending on what modules you want to use.)

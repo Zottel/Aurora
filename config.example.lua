@@ -47,7 +47,7 @@ config = {
 			}}
 		},
 		coffee = { -- Some simple Testcase…
-			file = "modules/coffee/coffee.lua",
+			file = "modules/coffee.lua",
 			parameters = {"data/coffee.example.json"}
 		},
 	},
