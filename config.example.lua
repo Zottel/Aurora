@@ -50,6 +50,18 @@ config = {
 			file = "modules/coffee.lua",
 			parameters = {"data/coffee.example.json"}
 		},
+    headings = {
+      file = "modules/headings.lua",
+      parameters = {}
+    },
+    timer = {
+      file = "modules/timer.lua",
+      parameters = {}
+    },
+    twitter = {
+      file ="modules/twitter.lua",
+      parameters = {"data/twitter.example.json", 5}
+    }
 	},
 	
 	-- These should be self-explanatory for everybody who even remotely knows the IRC.
