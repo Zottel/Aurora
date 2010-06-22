@@ -2,7 +2,6 @@ local pcre = require("rex_pcre")
 
 --[[ TODO
 Must have:
-  - each user may only vote once
   - handle multiple votes at the same time
   - handle votes on different channels
 Should have:
@@ -43,17 +42,11 @@ local interface = {
         network.send("PRIVMSG", channel, "Vote called: " .. vote.subject .. " -- vote with !yes, !no or !abs")
       end
 
-      if pcre.match(message, "^!yes") then -- no $ here, so you can write something like "!yes, I like it"
+      local v = pcre.match(message, "^!(yes|no)") -- no $ here, so you can write something like "!yes, I like it"
+      if v then
         if vote then
-          network.send("PRIVMSG", channel, votemsg(sender.nick, "yes"))
-          vote.votes[sender.nick] = "yes"
-        end
-      end
-
-      if pcre.match(message, "^!no") then
-        if vote then
-          network.send("PRIVMSG", channel, votemsg(sender.nick, "no")
-          vote.votes[sender.nick] = "no"
+          network.send("PRIVMSG", channel, votemsg(sender.nick, v))
+          vote.votes[sender.nick] = v
         end
       end
 
