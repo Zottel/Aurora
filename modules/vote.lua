@@ -59,7 +59,7 @@ local interface = {
 
       if pcre.match(message, "^!votestat$") then
         if vote then
-          count = { yes = 0, no = 0, abs = 0 }
+          count = { yes = 0, no = 0, abs = 0 } -- TODO Put the counting part into a function to avoid duplicated code
           for _,v in pairs(vote.votes) do
             if v == "yes" then
               count.yes = count.yes + 1
@@ -69,9 +69,9 @@ local interface = {
             end
             if v == "abs" then
               count.abs = count.abs + 1
-            end -- TODO find out how "else if" works in lua
+            end
           end
-          network.send("PRIVMSG", channel, "Current vote: " .. vote.subject .. " -- Yes: " .. count.yes .. " - no: " .. count.no .. " - abs: " .. count.abs)
+          network.send("PRIVMSG", channel, "Current vote: " .. vote.subject .. " -- Yes: " .. count.yes .. " - No: " .. count.no .. " - Abs: " .. count.abs)
         else
           network.send("PRIVMSG", channel, "Currently no vote.")
         end
@@ -90,13 +90,20 @@ local interface = {
             end
             if v == "abs" then
               count.abs = count.abs + 1
-            end -- TODO find out how "else if" works in lua
+            end
           end
-          network.send("PRIVMSG", channel, "Vote ended! " .. vote.subject .. " -- Yes: " .. count.yes .. " - no: " .. count.no .. " - abs: " .. count.abs)
+          network.send("PRIVMSG", channel, "Vote ended! " .. vote.subject .. " -- Yes: " .. count.yes .. " - No: " .. count.no .. " - Abs: " .. count.abs)
           vote = nil
         else
           network.send("PRIVMSG", channel, "Currently no vote.")
         end
+      end
+
+      if pcre.match(message, "^!help vote") then
+        network.send("PRIVMSG", channel, "Vote module - usage: \"!callvote <subject>\" to call a new vote")
+        network.send("PRIVMSG", channel, "\"!votestat\" to display an intermediate result of the current vote")
+        network.send("PRIVMSG", channel, "\"!endvote\" to end the vote and display the result")
+        network.send("PRIVMSG", channel, "When a vote is open, use \"!yes\" or \"!no\" to vote, \"!abs\" to abstain from the vote.")
       end
 		end
 	}
