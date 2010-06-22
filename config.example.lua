@@ -60,6 +60,8 @@ config = {
     },
     twitter = {
       file ="modules/twitter.lua",
+      -- the second parameter is the interval between twitter checks in minutes.
+      -- keep in mind that twitter allows only 150 requests per hour, and one request is made per user per interval
       parameters = {"data/twitter.example.json", 5}
     }
 	},
