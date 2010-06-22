@@ -38,8 +38,12 @@ local interface = {
 		privmsg = function(network, sender, channel, message)
       local callvote = pcre.match(message, "^!callvote (.+)$")
       if callvote then
-        vote = { subject = callvote , votes = {} } -- at the moment, let's just support one vote at a time
-        network.send("PRIVMSG", channel, "Vote called: " .. vote.subject .. " -- vote with !yes, !no or !abs")
+        if vote then
+          network.send("PRIVMSG", channel, "There is a vote in progress. You can't call a new one till the current one is ended.")
+        else
+          vote = { subject = callvote , votes = {} } -- at the moment, let's just support one vote at a time
+          network.send("PRIVMSG", channel, "Vote called: " .. vote.subject .. " -- vote with !yes, !no or !abs")
+        end
       end
 
       local v = pcre.match(message, "^!(yes|no)") -- no $ here, so you can write something like "!yes, I like it"
