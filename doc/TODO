@@ -1,9 +1,6 @@
 -Make auth module at least minimally secure
    (Introducing per-network authentication should solve the worst problems)
 
--Clean up the module interface
-   (Constructor + Destructor + Handlers)
-
 -Modules or components that handle IRC-related messages without being loaded
    with the user-interaction high-level modules.
 

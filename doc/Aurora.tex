@@ -1,0 +1,395 @@
+\documentclass{beamer}
+\usepackage[ngerman]{babel}
+%\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{wasysym}
+\usepackage{listings}
+\usepackage[]{hyperref}
+
+% Ich bezweifle dass diese "Sprachedefinition" auch nur ansatzweise korrekt ist, aber für meine Zwecke reicht es
+\lstdefinelanguage{Lua}{morekeywords={function,end,local,return,while,do,for,in},morekeywords={[2]table.insert},morecomment[1]{--},morestring=[b]’,morestring=[b]"}
+
+% Ein minimalistisches Layout
+\lstset{language=Lua,basicstyle=\small,stringstyle=\ttfamily,keywordstyle={[2]\small}}
+
+% Farb- und sonstige Gestaltung der Folien
+\usetheme{Dresden}
+\usefonttheme{serif}
+%\useinnertheme{circles}
+\usecolortheme{beaver}
+\setbeamercolor{itemize item}{fg=darkred}
+\setbeamercolor{itemize subitem}{fg=black}
+\setbeamertemplate{itemize item}[>]
+\setbeamertemplate{itemize subitem}[-]
+
+% Keine Navigationsleiste am unteren Folienrand
+\beamertemplatenavigationsymbolsempty
+
+% Joa, was so an Informationen zu einer Präsentation gehört
+\author{Julius Roob}
+\title{Aurora}
+\subtitle{Lua lernen \checked\\Entwickeln üben \checked\\IRC Bot haben \checked}
+\keywords{Lua, IRC}
+\institute{Chaostreff Kaiserslautern}
+\date{11. Juni 2010}
+
+\begin{document}
+	\section{Einleitung}
+		\begin{frame}
+			\titlepage
+		\end{frame}
+	
+		\begin{frame}{Übersicht}
+			\tableofcontents
+		\end{frame}
+	
+	
+	\section{Lua}
+		\begin{frame}{Lua}{Inhalt}
+			\begin{itemize}
+				\item Kurze Beschreibung
+				\item Datentypen
+				\item Tables
+				\item Funktionen
+				\item Sandboxing
+				\item OOP
+				\item Coroutines
+				\item Luarocks
+				\item JSON
+				\item Copas
+			\end{itemize}
+		\end{frame}
+
+		\begin{frame}{Lua}{Kurze Beschreibung - Wikipedia lässt grüßen}
+			\begin{itemize}
+				\item 1993 in Brasilien entwickelt
+				\item klein
+				\item Bytecode
+				\item LuaJIT
+				\item Verwendet in:
+					\begin{itemize}
+						\item World of Warcraft
+						\item Grub2
+						\item Adobe Photoshop Lightroom
+						\item Awesome
+						\item ...
+					\end{itemize}
+			\end{itemize}
+		\end{frame}
+
+		\begin{frame}{Datentypen}
+			\begin{itemize}
+				\item Number
+				\item String
+				\item Boolean
+				\item Nil
+				\item Table
+				\item Function
+				\item Thread
+				\item "`Userdata"'
+			\end{itemize}
+		\end{frame}
+		
+		\begin{frame}[fragile,shrink=5]{Tables}
+			Lua Programme werden hauptsächlich durch Tables organisiert.
+			Tables lassen sich wie Hashtables und Arrays nutzen.
+			Metatables (und Metamethoden) bestimmen Verhalten von LUA
+			\begin{lstlisting}[title={\_G}]
+				> print(_G.print)
+				function: 0x9402020
+			\end{lstlisting}
+
+			\begin{lstlisting}[title={\_\_index}]
+				> A = {a = 1, b = 2}
+				> B = {b = 3}
+				> setmetatable(B, {__index = A})
+				> print(B.a)
+				1
+				> print(B.b)
+				3
+			\end{lstlisting}
+		\end{frame}
+		
+		\begin{frame}[fragile,shrink=5]{Funktionen}
+			\lstset{numbers=none}
+			\begin{lstlisting}[title={Schreibweise}]
+				function <Name>(<Parameter>) ... end
+				-- ist das gleiche wie:
+				<Name> = function(<Parameter>) ... end
+			\end{lstlisting}
+
+			\begin{lstlisting}[title={Mehrere Rückgabewerte}]
+				local a, b, c = unpack({"hallo", "welt", "!"})
+
+				print(a, b, unpack({"!", "wie geht es dir?"}))
+			\end{lstlisting}
+			
+			\begin{columns}
+				\column{.50\textwidth}
+					\begin{lstlisting}[title={OOP}]
+						welt:hallo("!")
+						-- ist kurz fuer:
+						welt.hallo(welt, "!")
+					\end{lstlisting}
+				
+				\column{.50\textwidth}
+					\begin{lstlisting}[title={Proper Tail Calls}]
+						function f (x)
+						  return g(x)
+						end
+					\end{lstlisting}
+			\end{columns}
+		\end{frame}
+		
+		\begin{frame}[fragile]{Sandboxing}
+			Sehr komfortabel in Lua.
+
+			\begin{description}
+				\item[Scope] \verb+setfenv()+
+				\item[Prozessor] \verb+function e() error("CPU limit reached!") end+ \verb+debug.sethook(e, "", 1000)+
+				\item[Speicher] \verb+setrlimit()+ und \verb+pcall()+
+			\end{description}
+		\end{frame}
+		
+		\begin{frame}[fragile]{OOP}
+			\lstset{numbers=left}
+			Alternative zur bereits beschriebenen OOP: \textit{Closures for Scopes}
+			\begin{lstlisting}
+			function factory()
+			  local self = {kaffee=0}
+			  local interface = {}
+			  function interface.set(n)
+			    self.kaffee = n
+			  end
+			  function interface.get()
+			    return self.kaffee
+			  end
+			  return interface
+			end
+			\end{lstlisting}
+		\end{frame}
+
+		\begin{frame}[fragile]{Coroutines}
+			\begin{columns}
+				\column{.50\textwidth}
+					\begin{lstlisting}
+						function test()
+						  local a = 0
+						  while true do
+						    a = a + 1
+						    coroutine.yield(a)
+						  end
+						end
+					\end{lstlisting}
+				\column{.50\textwidth}
+					\begin{lstlisting}
+						> a = coroutine.create(test)
+						> print(coroutine.resume(a))
+						true	1
+						> print(coroutine.resume(a))
+						true	2
+						> print(coroutine.resume(a))
+						true	3
+						> print(coroutine.resume(a))
+						true	4
+						> print(coroutine.resume(a))
+						true	5
+					\end{lstlisting}
+			\end{columns}
+		\end{frame}
+		
+		\begin{frame}[fragile]{Luarocks}
+			\lstset{numbers=none}
+			Einfaches installieren von zusätzlichen Bibliotheken bzw. Paketen.
+			\begin{lstlisting}
+				# luarocks search pcre
+				# luarocks install lrexlib-pcre
+			\end{lstlisting}
+			\vskip15pt
+			Kann von einem Benutzer im Homedir installiert werden.
+			\vskip15pt
+			Skript mit Rocks ausführen:
+
+			\begin{lstlisting}
+				# lua -lluarocks.loader aurora.lua
+			\end{lstlisting}
+		\end{frame}
+		
+		\begin{frame}[fragile]{JSON}
+			Einfach und schön
+
+			\begin{lstlisting}
+				{
+				  "wasser":{"julius":1},
+				  "africola":{"bnerd":1,"julius":0},
+				  "baileys":{"julius":1},
+				  "cappu":{"lucy":2,"julius":7,"mullej":7},
+				  "mate":{"julius":0},
+				  "kaffee":{"julius":2,"lastofthewolves":1}
+				}
+			\end{lstlisting}
+			\verb+json.encode()+ und \verb+json.decode()+ sind wohl die einfachste Möglichkeit, Tables zu serialisieren.
+		\end{frame}
+		
+		\begin{frame}[fragile,shrink=5]{Copas}{Coroutine Oriented Portable Asynchronous Services for Lua}
+			\lstset{numbers=left}
+
+			\begin{lstlisting}[title={Primitiver Chatserver},firstnumber=3,frame=single]
+				users = {}
+				function handle(client)
+				  copas.send(client, "name? ")
+				  local name = copas.receive(client, "*l")
+				  users[name] = client
+				  while true do
+				    local line = copas.receive(client, "*l")
+				    for _,sock in pairs(users) do
+				      copas.send(sock, name .. ": " .. line .. "\n")
+				    end
+				  end
+				end
+				serv = socket.bind("0.0.0.0", 1025)
+				copas.addserver(serv, handle)
+				copas.loop()
+			\end{lstlisting}
+		\end{frame}
+	
+	
+	\section{IRC}
+		\begin{frame}{IRC}{Inhalt}
+			\begin{itemize}
+				\item Kurze Beschreibung 
+				\item Nachrichtenformat
+				\item Bleistifte
+				\item CTCP
+			\end{itemize}
+		\end{frame}
+		
+		\begin{frame}{Kurze Beschreibung (aka Wikipedia lite)}
+			\begin{itemize}
+				\item Gibt es als \textbf{Internet} Relay Chat seit 1988.
+				\item Es existiert eine unüberschaubare Anzahl an Clients, Bots und Servern
+				\item Thin Clients
+			\end{itemize}
+		\end{frame}
+		
+		\begin{frame}[fragile,shrink=5]{Nachrichtenformat}
+			Die Kommunikation zwischen Server und Client findet ausschließlich durch max. 510 Byte lange mit einem CRLF getrennte Nachrichten statt.
+			
+			\begin{lstlisting}[language=,breaklines=true,breakatwhitespace=true]
+				NICK julius_
+				USER julius julius irc.hackint.org :Julius
+				:irc.hackint.org NOTICE AUTH :*** No Ident response
+				:irc.hackint.org NOTICE AUTH :*** Couldn't look up your hostname
+				:irc.hackint.org 001 julius :Welcome to the hackint Internet Relay Chat Network julius
+			\end{lstlisting}
+			
+			\begin{lstlisting}[language=,breaklines=true,breakatwhitespace=true]
+				PING LAG2126774742
+				:irc.hackint.org PONG irc.hackint.org :LAG2126774742
+				PRIVMSG julius :blub!
+				:irc.hackint.org 301 julius_ julius :auf nach hause
+			\end{lstlisting}
+			
+			\begin{lstlisting}[language=,breaklines=true,breakatwhitespace=true]
+				:eBrnd!~eBrnd@ein.anderer.server PRIVMSG #c3kl :bitte irgendwas :)
+			\end{lstlisting}
+		\end{frame}
+
+		\begin{frame}[fragile]{Bleistife}
+			\begin{itemize}
+				\item \verb+PRIVMSG <Channel> <Nachricht>+
+				\item \verb+JOIN <Channel>(,<Channel>)*+
+				\item \verb+QUIT <Nachricht>+
+				\item \verb+NICK <Name>+
+			\end{itemize}
+		\end{frame}
+
+		\begin{frame}[fragile,shrink=5]{CTCP}{Client-To-Client Protocol}
+			\begin{lstlisting}[language=,breaklines=true,breakatwhitespace=true,title={Format}]
+				"\001<Befehl> <Parameter>\001"
+			\end{lstlisting}
+
+			\begin{lstlisting}[language=,breaklines=true,breakatwhitespace=true,title={Beispiele}]
+				\001ACTION demonstriert mal eben CTCP Action\001
+				-> 10:10  *julius demonstriert mal eben CTCP ACTION
+
+				\001VERSION\001
+				-> 10:16 [freenode] CTCP VERSION reply from julius: irssi v0.8.12
+
+				\001DCC SEND chess.lua 2213957892 48042 1682\001
+			\end{lstlisting}
+		\end{frame}
+	
+	\section{Aurora}
+		\begin{frame}{Aurora}{Inhalt}
+			\begin{itemize}
+				\item Motivation
+				\item Architektur
+				\item Module
+				\item Probleme
+			\end{itemize}
+		\end{frame}
+
+		\begin{frame}{Motivation}
+			Warum einen eigenen IRC Bot schreiben?
+
+			\begin{itemize}
+				\item Sprache Lua lernen
+				\item Eventbasierende Socket IO verinnerlichen
+				\item IRC Bots sind immer praktisch
+				\pause
+				\item Spaß
+			\end{itemize}
+		\end{frame}
+
+		\begin{frame}{Architektur}
+			Uh - ja...
+			\begin{itemize}
+				\item Module
+				\item ???
+				\item IRC Netzwerke
+			\end{itemize}
+		\end{frame}
+
+		\begin{frame}{Module}
+			\begin{itemize}
+				\item Konstruktor
+				\item Destruktor
+				\item Step
+				\item Handler
+					\begin{itemize}
+						\item DISCONNECT
+						\item CONNECT
+						\item PRIVMSG
+						\item ... (siehe RFC :)
+					\end{itemize}
+			\end{itemize}
+		\end{frame}
+		
+		\begin{frame}{Probleme}
+			\begin{itemize}
+				\item Module organisieren?
+				\item Zwischen Modulen und Netzwerken herrscht Anarchie
+				\item Authentifizierung im IRC ist unschön
+			\end{itemize}
+		\end{frame}
+
+		\begin{frame}{Fragen?}{Vorschläge, Anregungen...}
+			\url{http://www.github.com/Zottel/Aurora}
+
+			\textbf{:-)}
+		\end{frame}
+
+		\begin{frame}{Quellen}
+			\begin{itemize}
+				\item \#lua auf Freenode
+				\item LUA-Users Wiki
+				\item LUA Reference Manual
+				\item Projektseite von Copas
+				\item Wikipedia
+				\item RFC 1459 (Internet Relay Chat Protocol)
+				\item Julius Kopf
+			\end{itemize}
+		\end{frame}
+		
+\end{document}
