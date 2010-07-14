@@ -50,6 +50,10 @@ config = {
 			file = "modules/coffee.lua",
 			parameters = {"data/coffee.example.json"}
 		},
+		storage = {
+			file = "modules/storage.lua",
+			parameters = {"data/storage.example.json"}
+		},
     headings = {
       file = "modules/headings.lua",
       parameters = {}
