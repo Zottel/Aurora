@@ -218,9 +218,9 @@ function irc(name, copas)
 	function interface.disconnect(wanted)
 		if log then
 			if wanted then
-				log:debug("IRC[" .. name .. "]: Disconenct(do want!)")
+				log:debug("IRC[" .. name .. "]: Disconnect(do want!)")
 			else
-				log:debug("IRC[" .. name .. "]: Disconenct(not want!)")
+				log:debug("IRC[" .. name .. "]: Disconnect(not want!)")
 			end
 		end
 			
