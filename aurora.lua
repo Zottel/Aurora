@@ -24,7 +24,7 @@ local copas = require("copas")
 require("logging.console")
 -- Non-local to be accessible by all components.
 log = logging.console()
--- log:setLevel(logging.INFO)
+log:setLevel(logging.INFO)
 log:info("Aurora starting.")
 
 local irc = require("irc")

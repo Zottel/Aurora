@@ -77,7 +77,7 @@ function irc(name, copas)
 	end
 
 	local function parse_message(message)
-		if log then log:debug("IRC[" .. name .. "]: parse_message(\"" .. tostring(message) .. "\"") end
+		if log then log:debug("IRC[" .. name .. "]: parse_message(\"" .. tostring(message) .. "\")") end
 		local result = {sender = {}}
 
 		assert(type(message) == "string", "'parse_message' requires a string as first parameter, got '" .. type(message) .. "'")
@@ -101,7 +101,7 @@ function irc(name, copas)
 
 
 	local function handle(message)
-		if log then log:debug("IRC[" .. name .. "]: handle(\"" .. tostring(message) .. "\"") end
+		if log then log:debug("IRC[" .. name .. "]: handle(\"" .. tostring(message) .. "\")") end
 		local data = parse_message(message)
 		if(internal_handlers[string.upper(data.command)] == nil) then
 			call_external_handler(data.command, data.sender, unpack(data.parameters))
@@ -140,7 +140,7 @@ function irc(name, copas)
 
 
 	interface.send = function (...)
-		if log then log:debug("IRC[" .. name .. "]: send()") end
+		if log then log:debug("IRC[" .. name .. "]: entered send()") end
 		if not irc_socket then
 			return nil, "There is no open socket to send to!"
 		end
@@ -154,6 +154,8 @@ function irc(name, copas)
 				end
 			end
 		end
+
+		if log then log:debug("IRC[" .. name .. "]: send() produced message: " .. message) end
 
 		--local succ, err copas.send(irc_socket, message .. "\r\n")
 		local succ, err = irc_socket:send(message .. "\r\n")
