@@ -23,6 +23,7 @@ local pcre            = require("rex_pcre")
 
 
 -- Local Constants - these should not matter outside the module
+-- TODO: Fill these with values and translate them when received!
 local num_replies = {}
 local err_replies = {}
 
@@ -43,10 +44,7 @@ end
 
 -- Class definition, I preferred the factory method because I like to keep
 -- the external interface clean
-function irc(name, copas, debug)
-	
-	-- Default: No debugging
-	if(debug == nil) then debug = 0 end
+function irc(name, copas)
 	
 	-- Local variables
 	local nickname = nil
@@ -69,6 +67,7 @@ function irc(name, copas, debug)
 	-- --------------- --
 	
 	local function call_external_handler(command, ...)
+		if log then log:debug("IRC[" .. name .. "]: call_external_handler(" .. tostring(command) .. ", ...)") end
 		command = string.upper(command)
 		if(external_handlers[command] ~= nil) then
 			for i, v in pairs(external_handlers[command]) do
@@ -78,6 +77,7 @@ function irc(name, copas, debug)
 	end
 
 	local function parse_message(message)
+		if log then log:debug("IRC[" .. name .. "]: parse_message(\"" .. tostring(message) .. "\"") end
 		local result = {sender = {}}
 
 		assert(type(message) == "string", "'parse_message' requires a string as first parameter, got '" .. type(message) .. "'")
@@ -101,16 +101,11 @@ function irc(name, copas, debug)
 
 
 	local function handle(message)
+		if log then log:debug("IRC[" .. name .. "]: handle(\"" .. tostring(message) .. "\"") end
 		local data = parse_message(message)
-		if(debug) then
-			dump_message(data)
-		end
 		if(internal_handlers[string.upper(data.command)] == nil) then
 			call_external_handler(data.command, data.sender, unpack(data.parameters))
 		else
-			if(debug) then
-				print("found handler for:")
-			end
 			internal_handlers[string.upper(data.command)](data.sender, unpack(data.parameters))
 		end
 	end
@@ -121,6 +116,7 @@ function irc(name, copas, debug)
 	-- ---------------- --
 
 	interface.run = function()
+		if log then log:debug("IRC[" .. name .. "]: run()") end
 		assert(irc_socket, "[" .. name .. "] OMG TEH SOCKET IS ASPLODE!")
 		exit = false
 		current_socket = irc_socket
@@ -144,6 +140,7 @@ function irc(name, copas, debug)
 
 
 	interface.send = function (...)
+		if log then log:debug("IRC[" .. name .. "]: send()") end
 		if not irc_socket then
 			return nil, "There is no open socket to send to!"
 		end
@@ -156,9 +153,6 @@ function irc(name, copas, debug)
 					message = message .. value .. " "
 				end
 			end
-		end
-		if(debug) then
-			print(message .. "\r\n")
 		end
 
 		--local succ, err copas.send(irc_socket, message .. "\r\n")
@@ -173,10 +167,10 @@ function irc(name, copas, debug)
 
 
 	interface.connect = function(nick, server, port, password)
+		if log then log:debug("IRC[" .. name .. "]: connect(\"" .. tostring(nick) .. "\", \"" .. tostring(server) .. "\", \"" .. tostring(port) .. "\", \"" .. tostring(password) .. "\")") end
 		--irc_socket = assert(socket.tcp())
 		local new_socket, err = socket.connect(server, port)
 		if new_socket == nil then
-			if(debug) then print("could not connect: " .. err) end
 			return nil, err
 		else
 			irc_socket = new_socket
@@ -196,22 +190,24 @@ function irc(name, copas, debug)
 	end
 
 
-	function interface.register_handler(name, handler)
-		name = string.upper(name)
-		if(external_handlers[name] == nil) then
-			external_handlers[name] = {handler}
-		elseif(type(external_handlers[name]) == "table") then
-			table.insert(external_handlers[name], handler)
+	function interface.register_handler(event, handler)
+		if log then log:debug("IRC[" .. name .. "]: Registering handler " .. tostring(handler) .. " for \"" .. event .. "\".") end
+		event = string.upper(event)
+		if(external_handlers[event] == nil) then
+			external_handlers[event] = {handler}
+		elseif(type(external_handlers[event]) == "table") then
+			table.insert(external_handlers[event], handler)
 		end
 	end
 
 
 	function interface.unregister_handler(to_remove)
-		for name, list in pairs(external_handlers) do
+		if log then log:debug("IRC[" .. name .. "]: Unregistering handler " .. tostring(handler) .. " for \"" .. event .. "\".") end
+		for event, list in pairs(external_handlers) do
 			if type(list) == "table" then
-				for key, handler in pairs(external_handlers[name]) do
+				for key, handler in pairs(external_handlers[event]) do
 					if handler == to_remove then
-						external_handlers[name][key] = nil
+						external_handlers[event][key] = nil
 					end
 				end
 			end
@@ -220,6 +216,14 @@ function irc(name, copas, debug)
 
 
 	function interface.disconnect(wanted)
+		if log then
+			if wanted then
+				log:debug("IRC[" .. name .. "]: Disconenct(do want!)")
+			else
+				log:debug("IRC[" .. name .. "]: Disconenct(not want!)")
+			end
+		end
+			
 		irc_socket = nil
 		call_external_handler("disconnect", wanted, err)
 	end
@@ -233,6 +237,7 @@ function irc(name, copas, debug)
 	-- ------------------------- --
 
 	internal_handlers.PING = function(sender, param)
+		if log then log:debug("IRC[" .. name .. "]: PING \"" .. tostring(param) .. "\"") end
 		interface.send("PONG", param)
 	end
 

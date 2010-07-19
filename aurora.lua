@@ -20,15 +20,23 @@
 -- have to share one event handling system to work properly.
 local copas = require("copas")
 
+-- Our logging facility - the early bird logs the best errors.
+require("logging.console")
+-- Non-local to be accessible by all components.
+log = logging.console()
+-- log:setLevel(logging.INFO)
+log:info("Aurora starting.")
 
 local irc = require("irc")
 
 
 -- May be set to true by modules to terminate the reading loop and this the bot
-local exit = false
+exit = false
 
 -- …
+log:debug("Loading config.")
 config = assert(loadfile("config.lua"))()
+log:debug("Done loading config.")
 
 
 -- These need to be declared as early as possible to be accessible for
@@ -40,6 +48,7 @@ modules = {}
 -- Load all modules and call their construct() functions with
 -- the configured parameters.
 for name, mod_conf in pairs(config.modules) do
+	log:debug("Loading module " .. tostring(name))
 	modules[name] = assert(loadfile(mod_conf.file))()
 	if modules[name] ~= nil then
 		assert(modules[name].construct(unpack(mod_conf.parameters)))
@@ -50,7 +59,8 @@ end
 -- Create network tables, register the module handlers, connect them and
 -- create reading pseudo-threads.
 for name, options in pairs(config.networks) do
-	networks[name] = irc(name, copas, false)
+	log:debug("Creating network " .. tostring(name))
+	networks[name] = irc(name, copas)
 	networks[name].register_handler("connected", function(net) for _, channel in pairs(options.channels) do net.send("join", channel) end end)
 	for _, interface in pairs(modules) do
 		for op, callback in pairs(interface.handlers) do
@@ -61,7 +71,7 @@ for name, options in pairs(config.networks) do
 	if sock then
 		copas.addthread(networks[name].run)
 	else
-		print("Could not connect to '" .. name .. "': " .. err)
+		log:error("Could not connect to '" .. tostring(name) .. "': " .. err)
 	end
 end
 
@@ -69,6 +79,7 @@ end
 -- 
 while not exit do
 	copas.step(2)
+	log:debug("STEP")
 	for _, interface in pairs(modules) do
 		if interface.step ~= nil then
 			interface.step()
