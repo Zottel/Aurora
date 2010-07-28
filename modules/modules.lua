@@ -1,6 +1,16 @@
 local pcre = require("rex_pcre")
 local interface = {}
 
+local function help(param)
+	if param == "load_module" then
+		return "[modules] '!load_module <name> <lua file> <parameters>'. Where parameters is a json string which you'll probably like to be an array filled with you parameters like '[\"data/twitter.json\", 30]'."
+	elseif param == "unload_module" then
+		return "[modules] '!unload_module <name>' is all you need…"
+	else
+		return "[modules] Available commands: load_module & unload_module"
+	end
+end
+
 local function unload(name)
 	if modules[name] == nil then
 		return nil, "module '" .. name .. "' not loaded!"
@@ -83,6 +93,11 @@ interface.handlers =
 		if name then 
 			succ, err = load(name, file, param)
 			if not succ then net.send("privmsg", channel, "error: " .. err) end
+		end
+		local help, param = pcre.match(message, "^!(help) modules(:? (.*)|)$")
+		if name then 
+			reply = help(param)
+			if reply then net.send("privmsg", channel, reply) end
 		end
 	end
 }
