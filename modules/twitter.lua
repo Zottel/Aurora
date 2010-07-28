@@ -60,14 +60,14 @@ local interface = {
         local page = http.request("http://api.twitter.com/1/statuses/user_timeline/" .. username .. ".xml" .. last_query)
         if page then 
           usertweets[username] = pcre.gmatch(page, "<text>([^<]+)</text>")
-        end
 
-        -- update user.last; assuming the latest tweet is going to be on top
-        local last = pcre.match(page, "<id>([0-9]+)</id>")
-        if last then -- last is only set if a tweet was actually fetched...
-          for _,user in pairs(users) do
-            if user.username == username then
-              user.last = last
+          -- update user.last; assuming the latest tweet is going to be on top
+          local last = pcre.match(page, "<id>([0-9]+)</id>")
+          if last then -- last is only set if a tweet was actually fetched...
+            for _,user in pairs(users) do
+              if user.username == username then
+                user.last = last
+              end
             end
           end
         end
