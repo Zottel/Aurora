@@ -94,10 +94,23 @@ interface.handlers =
 			succ, err = load(name, file, param)
 			if not succ then net.send("privmsg", channel, "error: " .. err) end
 		end
+
 		local help, param = pcre.match(message, "^!(help) modules(:? (.*)|)$")
 		if name then 
 			reply = help(param)
 			if reply then net.send("privmsg", channel, reply) end
+		end
+
+		if pcre.match(message, "^!list_modules$") then
+			list = ""
+			for name,_ in pairs(modules) do
+				if list ~= "" then
+					list = list .. ", " .. name
+				else
+					list = name
+				end
+			end
+			net.send("privmsg", channel, list)
 		end
 	end
 }
