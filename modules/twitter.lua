@@ -58,7 +58,9 @@ local interface = {
           last_query = "?since_id=" .. last_id
         end
         local page = http.request("http://api.twitter.com/1/statuses/user_timeline/" .. username .. ".xml" .. last_query)
-        usertweets[username] = pcre.gmatch(page, "<text>([^<]+)</text>")
+        if page then 
+          usertweets[username] = pcre.gmatch(page, "<text>([^<]+)</text>")
+        end
 
         -- update user.last; assuming the latest tweet is going to be on top
         local last = pcre.match(page, "<id>([0-9]+)</id>")
@@ -76,6 +78,7 @@ local interface = {
         if usertweets[user.username] then
           for tweet in usertweets[user.username] do
             networks[user.network].send("PRIVMSG", user.channel, "twEET! " .. user.username .. ": " .. tweet)
+          -- TODO Handle &...;-codes. Twitter even uses those for German Ümlauts.
           end
         end
       end
