@@ -121,7 +121,7 @@ local interface = {
       local unfollow = pcre.match(message, "^!twitter unfollow ([^\\s]+)$")
       if unfollow then
         for i,user in pairs(users) do
-          if user.username == unfollow then
+          if user.username == unfollow and channel == channel then
             users[i] = nil
             writedb(db_file, users)
 
