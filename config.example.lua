@@ -24,7 +24,11 @@ config = {
 		},
 		reconnect = { -- Self-explanatory
 			file = "modules/reconnect.lua",
-			parameters = {true}
+			parameters = {}
+		},
+		altnick = { -- Allows for alternate nicknames when the original one is taken.
+			file = "modules/altnick.lua",
+			parameters = {"Aurora_"}
 		},
 		auth = { -- Aurora uses nested modules for features like authenticated modules
 			file = "modules/auth.lua",

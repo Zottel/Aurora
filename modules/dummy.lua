@@ -47,7 +47,7 @@ local interface = {
 		-- One typical IRC message handler:
 		privmsg = function(network, sender, channel, message)
 			-- Do something with message…
-		end
+		end,
 
 		
 		-- There are two special non-standard handlers:
@@ -56,7 +56,7 @@ local interface = {
 			-- The parameter "wanted" indicates - if set to true that the network
 			-- connection was closed by a module or the user and - probably - won't
 			-- come back on-line.
-		end
+		end,
 		-- and
 		connect = function(net)
 			-- Fairly self-explanatory.
