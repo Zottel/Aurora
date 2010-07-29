@@ -33,8 +33,15 @@ local irc = require("irc")
 -- May be set to true by modules to terminate the reading loop and this the bot
 exit = false
 
--- …
+-- Load config file into function and execute it to get the table containing
+-- our configuration data.
 log:debug("Loading config.")
+config, err = loadfile("config.lua")
+if not config then
+	log:fatal(err)
+	os.exit(1)
+end
+config = config()
 config = assert(loadfile("config.lua"))()
 log:debug("Done loading config.")
 
