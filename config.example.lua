@@ -18,6 +18,10 @@
 
 config = {
 	modules = {
+		botmode = { -- Considered good manners on most networks
+			file = "modules/botmode.lua",
+			parameters = {}
+		},
 		ping = { -- Detects disconnects
 			file = "modules/ping.lua",
 			parameters = {60}
