@@ -30,6 +30,25 @@ config = {
 			file = "modules/altnick.lua",
 			parameters = {"Aurora_"}
 		},
+		nickserv = { -- This one is awesome - or at least what it does is…
+			file = "modules/nickserv.lua",
+			parameters = {{
+				xinutec = {
+					nickname = "Aurora",
+					password = "nope",
+					email = "aurora@gempai.de",
+					ghost = true,
+					remote = "NickServ@services.xinutec.org",
+				},
+				freenode = {
+					nickname = "Aurora",
+					password = "nope",
+					email = "aurora@gempai.de",
+					ghost = true,
+					remote = "NickServ@services.freenode.org",
+				}
+			}}
+		},
 		auth = { -- Aurora uses nested modules for features like authenticated modules
 			file = "modules/auth.lua",
 			parameters =
