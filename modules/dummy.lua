@@ -58,7 +58,7 @@ local interface = {
 			-- come back on-line.
 		end,
 		-- and
-		connect = function(net)
+		connected = function(net)
 			-- Fairly self-explanatory.
 			-- Is - currently - called once the irc network sends an
 			-- "End of MOTD" message - after which the connection can be regarded as
