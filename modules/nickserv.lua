@@ -62,7 +62,7 @@ local interface = {
 					network.send("NICK", nickserv_networks[network.name()].config.nickname)
 				end
 
-				if pcre.match(message, "is not a registered nickname\\.$", nil, "i") then
+				if pcre.match(message, "is not a registered nickname\\.$", nil, "i") or pcre.match(message, "Your nick isn't registered\\.$", nil, "i") then
 					if log then log:info("[nickserv] Nickname \"" .. network.nick() .. "\" not registered on " .. network.name() .. "!") end
 					network.send("PRIVMSG", "Nickserv", string.format("register %s %s", nickserv_networks[network.name()].config.password, nickserv_networks[network.name()].config.email))
 				end
