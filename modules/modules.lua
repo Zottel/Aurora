@@ -6,8 +6,10 @@ local function help(param)
 		return "[modules] '!load_module <name> <lua file> <parameters>'. Where parameters is a json string which you'll probably like to be an array filled with you parameters like '[\"data/twitter.json\", 30]'."
 	elseif param == "unload_module" then
 		return "[modules] '!unload_module <name>' is all you need…"
+	elseif param == "list_modules" then
+		return "[modules] '!list_modules' - nothing more."
 	else
-		return "[modules] Available commands: load_module & unload_module"
+		return "[modules] Available commands: load_module, unload_module and list_modules"
 	end
 end
 
@@ -95,8 +97,9 @@ interface.handlers =
 			if not succ then net.send("privmsg", channel, "error: " .. err) end
 		end
 
-		local help, param = pcre.match(message, "^!(help) modules(:? (.*)|)$")
-		if name then 
+		local matched, param = pcre.match(message, "^!(help) modules(?: (.*)|)$")
+		if matched then 
+			print(param)
 			reply = help(param)
 			if reply then net.send("privmsg", channel, reply) end
 		end
