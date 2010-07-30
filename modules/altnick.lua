@@ -35,14 +35,14 @@ local interface = {
 		["433"] = function(network, sender, channel, message)
 			if log then log:info("[altnick] Nickname \"" .. network.nick() .. "\" already taken on " .. network.name() .. "!") end
 			if altnick then
-				if log then log:info("[altnick] Trying " .. config.networks[network.name()].altnick) end
+				if log then log:info("[altnick] Trying " .. altnick) end
 				network.send("NICK", altnick)
 			end
 		end,
 		["463"] = function(network, sender, channel, message)
 			if log then log:info("[altnick] Nickname \"" .. network.nick() .. "\" already taken on " .. network.name() .. "!") end
 			if altnick then
-				if log then log:info("[altnick] Trying " .. config.networks[network.name()].altnick) end
+				if log then log:info("[altnick] Trying " .. altnick) end
 				network.send("NICK", altnick)
 			end
 		end
