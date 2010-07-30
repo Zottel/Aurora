@@ -99,7 +99,6 @@ interface.handlers =
 
 		local matched, param = pcre.match(message, "^!(help) modules(?: (.*)|)$")
 		if matched then 
-			print(param)
 			reply = help(param)
 			if reply then net.send("privmsg", channel, reply) end
 		end
