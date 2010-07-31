@@ -1,106 +1,97 @@
-pcre = require("rex_pcre")
+-- -------------------------------------------------------------------------- --
+-- Aurora - auth.lua - Access control for modules.                            --
+-- -------------------------------------------------------------------------- --
+-- Copyright (C) 2010 Julius Roob <julius@juliusroob.de>                      --
+--                                                                            --
+-- This program is free software; you can redistribute it and/or modify it    --
+-- under the terms of the GNU General Public License as published by the      --
+-- Free Software Foundation; either version 3 of the License,                 --
+-- or (at your option) any later version.                                     --
+--                                                                            --
+-- This program is distributed in the hope that it will be useful, but        --
+-- WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License    --
+-- for more details.                                                          --
+--                                                                            --
+-- You should have received a copy of the GNU General Public License along    --
+-- with this program; if not, see <http://www.gnu.org/licenses/>.             --
+-- -------------------------------------------------------------------------- --
 
-local interface = {handlers = {}}
 
-local modules = {}
-
-local module_handlers = {}
-
-local auth_handlers = {}
-
-local user = {}
+-- User database - passwords, state and some attributes for identification
+-- are stored here.
+local users = {}
 
 
-function auth_handlers.PRIVMSG(net, sender, channel, message)
-	if user[sender.nick] ~= nil then
-		local password = pcre.match(message, "!identify (.*)$")
+-- Local equivalent to global "modules" table.
+local auth_modules = {}
 
-		if password == user[sender.nick].password then
-			user[sender.nick].authenticated = true
+
+-- All the handlers reachable by non-authenticated users.
+local handlers = {
+	privmsg = {
+		function(network, sender, channel, message)
+		
 		end
-	end
-end
+	},
 
-
-function auth_handlers.QUIT(net, sender, message)
-	if user[sender.nick] ~= nil then
-		user[sender.nick].authenticated = nil
-	end
-end
-
-
-function auth_handlers.NICK(net, sender, new)
-	if user[sender.nick] ~= nil then
-		user[sender.nick].authenticated = nil
-	end
-end
-
-
-local function is_authenticated(net, sender)
-	if user[sender.nick] ~= nil then
-		return user[sender.nick].authenticated
-	else
-		return false
-	end
-end
-
-
-function interface.construct(modules, users)
-	-- Save the username/password db for later use
-	for name, password in pairs(users) do
-		user[name] = {["password"] = password}
-	end
-
-	-- Start all our sub-modules and register their callbacks in our local database
-	for name, options in pairs(modules) do
-		local mod = assert(loadfile(options.file))()
-
-		assert(mod.construct(unpack(options.parameters)))
-
-		for op, callback in pairs(mod.handlers) do
-			op = string.upper(op)
-
-			if module_handlers[op] == nil then
-				module_handlers[op] = {callback}
-			else
-				table.insert(module_handlers[op], callback)
-			end
-		end
-
-		modules[name] = mod
-	end
-
-	-- For each registered callback from our sub-modules we install a small handler to check
-	-- the sender's authentication prior to calling it.
-	for name, call in pairs(module_handlers) do
-		interface.handlers[name] = function(net, sender, ...)
-			if auth_handlers[name] ~= nil then
-				auth_handlers[name](net, sender, ...)
-			end
-
-			if is_authenticated(net, sender, ...)  or not sender then 
-				for _, callback in pairs(module_handlers[name]) do
-					callback(net, sender, ...)
-				end
-			end
-		end
-	end
 	
-	-- The authentication module has needs too!
-	for name, call in pairs(auth_handlers) do
-		if interface.handlers[name] == nil then
-			interface.handlers[name] = call
+	disconnect = {
+		function(net, wanted, err)
+		
 		end
-	end
+	},
 
-	return true
-end
+	
+	connected = {
+		function(net)
+		
+		end
+	}
+}
 
-function interface.destruct()
-	for name, interface in pairs(modules) do
-		interface.destruct()
-	end
-end
 
+-- These handlers can only be reached by authenticated users.
+local authenticated_handlers = {
+	part = {
+		function(network, sender, channel)
+
+		end
+	},
+
+
+	quit = {
+		function(network, sender, message)
+
+		end
+	}
+}
+
+
+local interface = {
+	construct = function(config_users, config_modules)
+		-- Fill user database with configured accounts.
+		for network, network_users in pairs(config_users) do
+			users[network] = {}
+			for user, password in pairs(network_users) do
+				users[network][user] = {password = password, state = "unidentified"}
+			end
+		end
+
+		-- Load and construct configured modules.
+		
+		return true
+	end,
+
+	destruct = function()
+		
+	end,
+
+	step = function()
+		
+	end,
+
+	handlers = handlers
+}
 
 return interface
