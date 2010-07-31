@@ -10,6 +10,7 @@ Prerequisites:
  * copas
  * lrexlib-pcre
  * luajson (More or less optional, depending on what modules you want to use.)
+ * lualogging
 
 
 Installation:
