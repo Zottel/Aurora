@@ -38,7 +38,7 @@ local auth_modules = {}
 -- Here the public handlers will be stored.
 -- These are all wrapper functions that call authorized or unauthorized
 -- handlers, based on the user calling them.
-local handlers = {}
+local handlers = nil
 
 
 -- Returns whether the sender is authorized to use…
@@ -76,12 +76,15 @@ local unauthorized_handlers = {
 
 	PRIVMSG = {
 		function(network, sender, channel, message)
-			if users[network.name()] and users[network.name()][sender.nick] then
+			if users[network.name()]
+			   and users[network.name()][sender.nick] then
 				users[network.name()][sender.nick].channels[channel] = true
 				if users[network.name()][sender.nick].state == "unidentified"
 				   and pcre.match(message,
 				                  "(!identify) " .. users[network.name()][sender.nick].password) then
 					users[network.name()][sender.nick].state = "identified"
+					users[network.name()][sender.nick].ident = sender.ident
+					users[network.name()][sender.nick].host = sender.host
 				end
 			end
 		end
@@ -127,6 +130,7 @@ local authorized_handlers = {
 }
 
 
+-- Fill user database with configured accounts.
 local function setup_users(config_users)
 	for network, network_users in pairs(config_users) do
 		users[network] = {}
@@ -137,26 +141,58 @@ local function setup_users(config_users)
 end
 
 
+-- Load and construct configured modules.
 local function setup_modules()
 	
 end
 
 
+-- Create wrapper functions for all handlers that decide which handler and
+-- if to call depending on the user.
 local function setup_handlers()
+	handlers = {}
+	for event, _ in pairs(unauthorized_handlers) do
+		if authorized_handlers[event] then
+			handlers[event] = function(network, sender, ...)
+				local user_handlers = nil
+				if authorized(network, sender) then
+					user_handlers = authorized_handlers[event]
+				else
+					user_handlers = unauthorized_handlers[event]
+				end
+				for _, callback in pairs(user_handlers) do
+					callback(network, sender, ...)
+				end
+			end
+		else
+			handlers[event] = function(network, sender, ...)
+				for _, callback in pairs(unauthorized_handlers[event]) do
+					callback(network, sender, ...)
+				end
+			end
+		end
+	end
 	
+	for event, _ in pairs(authorized_handlers) do
+		if not unauthorized_handlers[event] then
+			handlers[event] = function(network, sender, ...)
+				if authorized(network, sender) then
+					for _, callback in pairs(authorized_handlers[event]) do
+						callback(network, sender, ...)
+					end
+				end
+			end
+		end
+	end
 end
 
 
 local interface = {
 	construct = function(config_users, config_modules)
-		-- Fill user database with configured accounts.
 		setup_users(config_users)
 		
-		-- Load and construct configured modules.
 		setup_modules(config_modules)
 
-		-- Create wrapper functions for all handlers that decide which handler and
-		-- if to call depending on the user.
 		setup_handlers()
 
 		return true
