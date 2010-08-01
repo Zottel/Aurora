@@ -21,75 +21,159 @@
 -- User database - passwords, state and some attributes for identification
 -- are stored here.
 local users = {}
+-- Layout:
+-- users[network][nick] = {
+--	state = "unidentified",
+--	password = "",
+--	ident = "",
+--	host = "",
+--	channels = {["#test"] = true}
+-- }
 
 
 -- Local equivalent to global "modules" table.
 local auth_modules = {}
 
 
--- All the handlers reachable by non-authenticated users.
-local handlers = {
-	privmsg = {
+-- Here the public handlers will be stored.
+-- These are all wrapper functions that call authorized or unauthorized
+-- handlers, based on the user calling them.
+local handlers = {}
+
+
+-- Returns whether the sender is authorized to use…
+local function authorized(network, sender)
+	return users[network.name()]
+	       and users[network.name()][sender.nick]
+				 and users[network.name()][sender.nick].ident == sender.ident
+				 and users[network.name()][sender.nick].host == sender.host
+	       and users[network.name()][sender.nick].state == "identified"
+end
+
+
+-- All the handlers reachable by non-authorized users.
+local unauthorized_handlers = {
+	JOIN = {
+		function(network, sender, channel)
+			
+		end
+	},
+
+
+	PART = {
+		function(network, sender, channel)
+			
+		end
+	},
+
+
+	QUIT = {
+		function(network, sender, message)
+			
+		end
+	},
+
+
+	PRIVMSG = {
 		function(network, sender, channel, message)
-		
+			if users[network.name()] and users[network.name()][sender.nick] then
+				users[network.name()][sender.nick].channels[channel] = true
+				if users[network.name()][sender.nick].state == "unidentified"
+				   and pcre.match(message,
+				                  "(!identify) " .. users[network.name()][sender.nick].password) then
+					users[network.name()][sender.nick].state = "identified"
+				end
+			end
 		end
 	},
 
 	
-	disconnect = {
+	DISCONNECT = {
 		function(net, wanted, err)
-		
+			
 		end
 	},
 
 	
-	connected = {
+	CONNECTED = {
 		function(net)
-		
+			
 		end
 	}
 }
 
 
 -- These handlers can only be reached by authenticated users.
-local authenticated_handlers = {
-	part = {
+local authorized_handlers = {
+	JOIN = {
 		function(network, sender, channel)
-
+			
 		end
 	},
 
 
-	quit = {
-		function(network, sender, message)
+	PART = {
+		function(network, sender, channel)
+			
+		end
+	},
 
+
+	QUIT = {
+		function(network, sender, message)
+			
 		end
 	}
 }
 
 
+local function setup_users(config_users)
+	for network, network_users in pairs(config_users) do
+		users[network] = {}
+		for user, password in pairs(network_users) do
+			users[network][user] = {password = password, state = "unidentified"}
+		end
+	end
+end
+
+
+local function setup_modules()
+	
+end
+
+
+local function setup_handlers()
+	
+end
+
+
 local interface = {
 	construct = function(config_users, config_modules)
 		-- Fill user database with configured accounts.
-		for network, network_users in pairs(config_users) do
-			users[network] = {}
-			for user, password in pairs(network_users) do
-				users[network][user] = {password = password, state = "unidentified"}
-			end
-		end
-
-		-- Load and construct configured modules.
+		setup_users(config_users)
 		
+		-- Load and construct configured modules.
+		setup_modules(config_modules)
+
+		-- Create wrapper functions for all handlers that decide which handler and
+		-- if to call depending on the user.
+		setup_handlers()
+
 		return true
 	end,
 
+
 	destruct = function()
-		
+		for name, interface in pairs(auth_modules) do
+			
+		end
 	end,
+
 
 	step = function()
 		
 	end,
+
 
 	handlers = handlers
 }
