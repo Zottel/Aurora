@@ -17,6 +17,8 @@
 -- with this program; if not, see <http://www.gnu.org/licenses/>.             --
 -- -------------------------------------------------------------------------- --
 
+local pcre = require("rex_pcre")
+
 
 -- User database - passwords, state and some attributes for identification
 -- are stored here.
@@ -38,7 +40,7 @@ local auth_modules = {}
 -- Here the public handlers will be stored.
 -- These are all wrapper functions that call authorized or unauthorized
 -- handlers, based on the user calling them.
-local handlers = nil
+local handlers = {}
 
 
 -- Returns whether the sender is authorized to use…
@@ -136,7 +138,7 @@ local unauthorized_handlers = {
 		function(net, wanted, err)
 			-- Can't use any previous authentication data anymore - resetting the user data.
 			for nick, data in pairs(users[network.name()]) do
-				users[network.name()][nick] = {state = "offline", password = data.password}
+				users[network.name()][nick] = {state = "offline", password = data.password, channels = {}}
 			end
 		end
 	},
@@ -185,7 +187,7 @@ local authorized_handlers = {
 	QUIT = {
 		function(network, sender, message)
 			-- User gone - reset authentication data.
-			users[network.name()][sender.nick] = {state = "offline", password = data.password}
+			users[network.name()][sender.nick] = {state = "offline", password = data.password, channels = {}}
 		end
 	}
 }
@@ -197,15 +199,15 @@ local function setup_users(config_users)
 		users[network] = {}
 
 		for user, password in pairs(network_users) do
-			users[network][user] = {password = password, state = "offline"}
+			users[network][user] = {password = password, state = "offline", channels = {}}
 		end
 	end
 end
 
 
 -- Load and construct configured modules.
-local function setup_modules()
-	for name, mod_conf in pairs(config.modules) do
+local function setup_modules(config_modules)
+	for name, mod_conf in pairs(config_modules) do
 		auth_modules[name] = assert(loadfile(mod_conf.file))()
 
 		assert(auth_modules[name].construct(unpack(mod_conf.parameters)))
@@ -242,8 +244,6 @@ end
 -- Create wrapper functions for all handlers that decide which handler and
 -- if to call depending on the user.
 local function setup_handlers()
-	handlers = {}
-
 	for event, _ in pairs(unauthorized_handlers) do
 		if authorized_handlers[event] then
 			handlers[event] = function(network, sender, ...)
