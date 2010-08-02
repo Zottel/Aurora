@@ -55,23 +55,28 @@ config = {
 		},
 		auth = { -- Aurora uses nested modules for features like authenticated modules
 			file = "modules/auth.lua",
-			parameters =
-			-- Auth modules
-			{{
-				modules = { -- Loading and unloading "public" modules
-				file = "modules/modules.lua",
-				parameters = {}
+			parameters = {
+				-- Auth users
+				{
+					-- Seperate users for each network.
+					xinutec = {
+						-- user = password pairs
+						admin = "password",
+						anotheradmin = "anotherpassword!"
+					}
 				},
-				answer = { -- To see if the authentication was successful
-				file = "modules/answer.lua",
-				parameters = {"Aurora?", "Yeah Boss?"}
+				-- Auth modules
+				{
+					modules = { -- Loading and unloading "public" modules
+					file = "modules/modules.lua",
+					parameters = {}
+					},
+					answer = { -- To see if the authentication was successful
+					file = "modules/answer.lua",
+					parameters = {"Aurora?", "Yeah Boss?"}
+					}
 				}
-			},
-			-- Auth users
-			{
-				admin = "password",
-				anotheradmin = "anotherpassword!"
-			}}
+			}
 		},
 		coffee = { -- Some simple Testcase…
 			file = "modules/coffee.lua",
