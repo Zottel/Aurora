@@ -204,11 +204,11 @@ function irc(name, copas)
 
 
 	function interface.unregister_handler(to_remove)
-		if log then log:debug("IRC[" .. name .. "]: Unregistering handler " .. tostring(handler) .. " for \"" .. event .. "\".") end
 		for event, list in pairs(external_handlers) do
 			if type(list) == "table" then
 				for key, handler in pairs(external_handlers[event]) do
 					if handler == to_remove then
+						if log then log:debug("IRC[" .. name .. "]: Unregistering handler " .. tostring(handler) .. " for \"" .. event .. "\".") end
 						external_handlers[event][key] = nil
 					end
 				end
