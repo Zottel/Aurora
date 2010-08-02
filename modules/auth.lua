@@ -55,21 +55,53 @@ end
 local unauthorized_handlers = {
 	JOIN = {
 		function(network, sender, channel)
-			
+			if users[network.name()]
+			   and users[network.name()][sender.nick]
+			   and users[network.name()][sender.nick].state == "offline" then
+				users[network.name()][sender.nick].state = "unidentified"
+			end
 		end
 	},
 
 
 	PART = {
 		function(network, sender, channel)
-			
+			if users[network.name()]
+			   and users[network.name()][sender.nick] then
+				if channel ~= sender.nick then
+					-- Remove channel from list
+					users[network.name()][sender.nick].channels[channel] = false
+				end
+
+				-- Check if the user is still present in any channel we're in
+				if users[network.name()][sender.nick].state ~= "offline" then
+					local anywhere = false
+
+					for _, present in pairs(users[network.name()][sender.nick].channels) do
+						anywhere = anywhere or present
+					end
+
+					if not anywhere then
+						users[network.name()][sender.nick].state = "offline"
+					end
+				end
+			end
 		end
 	},
 
 
 	QUIT = {
 		function(network, sender, message)
-			
+			if users[network.name()]
+			   and users[network.name()][sender.nick] then
+				-- Mark user as offline.
+				users[network.name()][sender.nick].state = "offline"
+
+				-- And remove all channels from the "present" list.
+				for name, _ in pairs(users[network.name()][sender.nick].channels) do
+					users[network.name()][sender.nick].channels[name] = false
+				end
+			end
 		end
 	},
 
@@ -78,12 +110,21 @@ local unauthorized_handlers = {
 		function(network, sender, channel, message)
 			if users[network.name()]
 			   and users[network.name()][sender.nick] then
-				users[network.name()][sender.nick].channels[channel] = true
+				if channel ~= sender.nick then
+					-- Remember the user is present in the channel
+					users[network.name()][sender.nick].channels[channel] = true
+
+					-- We can mark the user as no longer offline if he's not in a query.
+					users[network.name()][sender.nick].state = "unidentified"
+				end
+
 				if users[network.name()][sender.nick].state == "unidentified"
 				   and pcre.match(message,
 				                  "(!identify) " .. users[network.name()][sender.nick].password) then
 					users[network.name()][sender.nick].state = "identified"
+
 					users[network.name()][sender.nick].ident = sender.ident
+
 					users[network.name()][sender.nick].host = sender.host
 				end
 			end
@@ -135,7 +176,7 @@ local function setup_users(config_users)
 	for network, network_users in pairs(config_users) do
 		users[network] = {}
 		for user, password in pairs(network_users) do
-			users[network][user] = {password = password, state = "unidentified"}
+			users[network][user] = {password = password, state = "offline"}
 		end
 	end
 end
