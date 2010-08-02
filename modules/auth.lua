@@ -45,8 +45,8 @@ local handlers = nil
 local function authorized(network, sender)
 	return users[network.name()]
 	       and users[network.name()][sender.nick]
-				 and users[network.name()][sender.nick].ident == sender.ident
-				 and users[network.name()][sender.nick].host == sender.host
+	       and users[network.name()][sender.nick].ident == sender.ident
+	       and users[network.name()][sender.nick].host == sender.host
 	       and users[network.name()][sender.nick].state == "identified"
 end
 
@@ -195,6 +195,7 @@ local authorized_handlers = {
 local function setup_users(config_users)
 	for network, network_users in pairs(config_users) do
 		users[network] = {}
+
 		for user, password in pairs(network_users) do
 			users[network][user] = {password = password, state = "offline"}
 		end
@@ -206,7 +207,9 @@ end
 local function setup_modules()
 	for name, mod_conf in pairs(config.modules) do
 		auth_modules[name] = assert(loadfile(mod_conf.file))()
+
 		assert(auth_modules[name].construct(unpack(mod_conf.parameters)))
+
 		if auth_modules[name].authorized_handlers then
 			for event, callback in pairs(auth_modules[name].authorized_handlers) do
 				if authorized_handlers[string.upper(event)] then
