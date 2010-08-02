@@ -134,14 +134,17 @@ local unauthorized_handlers = {
 	
 	DISCONNECT = {
 		function(net, wanted, err)
-			
+			-- Can't use any previous authentication data anymore - resetting the user data.
+			for nick, data in pairs(users[network.name()]) do
+				users[network.name()][nick] = {state = "offline", password = data.password}
+			end
 		end
 	},
 
 	
 	CONNECTED = {
 		function(net)
-			
+			-- Don't care - do I?
 		end
 	}
 }
@@ -151,21 +154,38 @@ local unauthorized_handlers = {
 local authorized_handlers = {
 	JOIN = {
 		function(network, sender, channel)
-			
+			users[network.name()][sender.nick].channels[channel] = true
 		end
 	},
 
 
 	PART = {
 		function(network, sender, channel)
-			
+			if channel ~= sender.nick then
+				-- Remove channel from list
+				users[network.name()][sender.nick].channels[channel] = false
+			end
+
+			-- Check if the user is still present in any channel we're in
+			if users[network.name()][sender.nick].state ~= "offline" then
+				local anywhere = false
+
+				for _, present in pairs(users[network.name()][sender.nick].channels) do
+					anywhere = anywhere or present
+				end
+
+				if not anywhere then
+					users[network.name()][sender.nick].state = "offline"
+				end
+			end
 		end
 	},
 
 
 	QUIT = {
 		function(network, sender, message)
-			
+			-- User gone - reset authentication data.
+			users[network.name()][sender.nick] = {state = "offline", password = data.password}
 		end
 	}
 }
@@ -184,7 +204,35 @@ end
 
 -- Load and construct configured modules.
 local function setup_modules()
-	
+	for name, mod_conf in pairs(config.modules) do
+		auth_modules[name] = assert(loadfile(mod_conf.file))()
+		assert(auth_modules[name].construct(unpack(mod_conf.parameters)))
+		if auth_modules[name].authorized_handlers then
+			for event, callback in pairs(auth_modules[name].authorized_handlers) do
+				if authorized_handlers[string.upper(event)] then
+					table.insert(authorized_handlers[string.upper(event)], callback)
+				else
+					authorized_handlers[string.upper(event)] = {callback}
+				end
+			end
+
+			for event, callback in pairs(auth_modules[name].handlers) do
+				if unauthorized_handlers[string.upper(event)] then
+					table.insert(unauthorized_handlers[string.upper(event)], callback)
+				else
+					unauthorized_handlers[string.upper(event)] = {callback}
+				end
+			end
+		else
+			for event, callback in pairs(auth_modules[name].handlers) do
+				if authorized_handlers[string.upper(event)] then
+					table.insert(authorized_handlers[string.upper(event)], callback)
+				else
+					authorized_handlers[string.upper(event)] = {callback}
+				end
+			end
+		end
+	end
 end
 
 
@@ -192,15 +240,18 @@ end
 -- if to call depending on the user.
 local function setup_handlers()
 	handlers = {}
+
 	for event, _ in pairs(unauthorized_handlers) do
 		if authorized_handlers[event] then
 			handlers[event] = function(network, sender, ...)
 				local user_handlers = nil
+
 				if authorized(network, sender) then
 					user_handlers = authorized_handlers[event]
 				else
 					user_handlers = unauthorized_handlers[event]
 				end
+
 				for _, callback in pairs(user_handlers) do
 					callback(network, sender, ...)
 				end
@@ -241,14 +292,31 @@ local interface = {
 
 
 	destruct = function()
+		-- Remove authorized handlers to avoid calling destroyed modules.
+		for event, _ in authorized_handlers do
+			authorized_handlers[event] = {}
+		end
+
+		-- Remove…
+		for event, _ in unauthorized_handlers do
+			unauthorized_handlers[event] = {}
+		end
+
+		-- Destruct Modules
 		for name, interface in pairs(auth_modules) do
-			
+			if interface.destruct then
+				interface.destruct()
+			end
 		end
 	end,
 
 
 	step = function()
-		
+		for name, interface in pairs(auth_modules) do
+			if interface.step then
+				interface.step()
+			end
+		end
 	end,
 
 
