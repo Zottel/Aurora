@@ -72,8 +72,16 @@ config = {
 					parameters = {}
 					},
 					answer = { -- To see if the authentication was successful
-					file = "modules/answer.lua",
-					parameters = {"Aurora?", "Yeah Boss?"}
+						file = "modules/answer.lua",
+						parameters = {
+							-- Normal users
+							{
+								["Aurora?"] = "Yup?"
+							}, 
+							{
+								["Aurora?"] = "Yeah Boss?"
+							}
+						}
 					}
 				}
 			}
