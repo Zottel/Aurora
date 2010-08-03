@@ -120,7 +120,11 @@ local unauthorized_handlers = {
 					users[network.name()][sender.nick].state = "unidentified"
 				end
 
-				if users[network.name()][sender.nick].state == "unidentified"
+				if users[network.name()][sender.nick].state == "offline"
+				   and pcre.match(message,
+				                  "(!identify) " .. users[network.name()][sender.nick].password) then
+					network.send("PRIVMSG", channel, "You should be at least in one channel with me.")
+				elseif users[network.name()][sender.nick].state == "unidentified"
 				   and pcre.match(message,
 				                  "(!identify) " .. users[network.name()][sender.nick].password) then
 					users[network.name()][sender.nick].state = "identified"
@@ -128,6 +132,8 @@ local unauthorized_handlers = {
 					users[network.name()][sender.nick].ident = sender.ident
 
 					users[network.name()][sender.nick].host = sender.host
+
+					network.send("PRIVMSG", channel, "Authentication successful")
 				end
 			end
 		end
