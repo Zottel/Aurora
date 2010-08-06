@@ -13,6 +13,16 @@ interface.construct = function(new_timeout)
 	return true
 end
 
+interface.step = function()
+	for net, time in pairs(last_ping) do
+		if (time + (2 * timeout)) < os.time() then
+			net.disconnect()
+		elseif (time + timeout) < os.time() then
+			net.send("ping", os.time())
+		end
+	end
+end
+
 interface.handlers =
 {
 	ping = function(net)
@@ -30,15 +40,6 @@ interface.handlers =
 	disconnect = function(net, wanted, err)
 		last_ping[net] = nil
 	end,
-	step = function()
-		for net, time in pairs(last_ping) do
-			if (time + (2 * timeout)) < os.time() then
-				net.disconnect()
-			elseif (time + timeout) < os.time() then
-				net.send("ping", os.time())
-			end
-		end
-	end
 }
 
 return interface
