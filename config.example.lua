@@ -76,10 +76,10 @@ config = {
 						parameters = {
 							-- Normal users
 							{
-								["Aurora\\?$"] = "Yup?"
+								["^Aurora\\?$"] = "Yup?"
 							}, 
 							{
-								["Aurora\\?$"] = "Yeah Boss?"
+								["^Aurora\\?$"] = "Yeah Boss?"
 							}
 						}
 					}
