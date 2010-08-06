@@ -141,7 +141,7 @@ local unauthorized_handlers = {
 
 	
 	DISCONNECT = {
-		function(net, wanted, err)
+		function(network, wanted, err)
 			-- Can't use any previous authentication data anymore - resetting the user data.
 			for nick, data in pairs(users[network.name()]) do
 				users[network.name()][nick] = {state = "offline", password = data.password, channels = {}}
