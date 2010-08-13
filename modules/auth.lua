@@ -193,6 +193,7 @@ local authorized_handlers = {
 	QUIT = {
 		function(network, sender, message)
 			-- User gone - reset authentication data.
+			local data = users[network.name()][sender.nick]
 			users[network.name()][sender.nick] = {state = "offline", password = data.password, channels = {}}
 		end
 	}
