@@ -259,7 +259,7 @@ function irc(name, copas)
 		-- Did we receive a CTCP?
 		local cmd, param = pcre.match(message, "\001([^ ]+)(?: (.*))\001")
 		if(cmd) then
-			call_external_handler("ctcp", sender, channel, param)
+			call_external_handler("ctcp", sender, channel, cmd, param)
 		else
 			call_external_handler("privmsg", sender, channel, message)
 		end
