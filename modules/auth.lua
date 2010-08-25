@@ -46,6 +46,8 @@ local handlers = {}
 -- Returns whether the sender is authorized to use…
 local function authorized(network, sender)
 	return users[network.name()]
+	       and sender
+				 and sender.nick
 	       and users[network.name()][sender.nick]
 	       and users[network.name()][sender.nick].ident == sender.ident
 	       and users[network.name()][sender.nick].host == sender.host
