@@ -107,7 +107,11 @@ config = {
       -- the second parameter is the interval between twitter checks in minutes.
       -- keep in mind that twitter allows only 150 requests per hour, and one request is made per user per interval
       parameters = {"data/twitter.example.json", 5}
-    }
+    },
+		morgen = { -- Greets in the morning
+			file = "modules/morgen.lua",
+			parameters = {{xinutec = {"#test"}}}
+		}
 	},
 	
 	-- These should be self-explanatory for everybody who even remotely knows the IRC.
