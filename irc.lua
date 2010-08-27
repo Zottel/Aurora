@@ -71,7 +71,8 @@ function irc(name, copas)
 		command = string.upper(command)
 		if(external_handlers[command] ~= nil) then
 			for i, v in pairs(external_handlers[command]) do
-				v(interface, ...)
+				succ, err = pcall(v, interface, ...)
+				if not succ and log then log:error(string.format("Handler for \"%s\" returned error: '%s'", command, err)) end
 			end
 		end
 	end
