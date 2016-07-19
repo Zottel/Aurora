@@ -147,6 +147,9 @@ function irc(name, copas)
 		end
 		message = ""
 		for key, value in pairs(arg) do
+			-- Make line breaks not allow injecting irc commands
+			value = string.gsub(value, "[\r\n]", " ")
+			
 			if(key ~= "n") then
 				if(string.find(value, " ")) then
 					message = message .. ":" .. value .. " "
